@@ -11,6 +11,18 @@ function Add_Course() {
         return `${year}-${month}-${date}`;
       }
 
+      const [data, setData]= useState([])
+    useEffect(()=>{
+        axios
+        .get('http://127.0.0.1:8000/create_faculty/')
+        .then((response)=>{
+            setData(response.data)
+        })
+        .catch((error)=>{
+            console.log("error")
+        })
+    }, [data])
+
 
     //   -------------------------------------------------------------Count of Course ----------------------------------
 
@@ -95,27 +107,34 @@ function Add_Course() {
                         <div className='row'>
                             <div className='col-md-6 pb-2'>
                                 <label className='font-weight-bolder'>Course Id</label>
-                                <input type='text' className='form-control' name='course_enrollment_id' value={totalCount + 1} readOnly onChange={handleInput} />
+                                <input type='text' className='form-control font-weight-bolder' name='course_enrollment_id' value={totalCount + 1} readOnly onChange={handleInput} />
                             </div>
                             <div className='col-md-6 pb-2'>
                                 <label className='font-weight-bolder'>Course Name</label>
-                                <input type='text' className='form-control' name='course_name' onChange={handleInput} />
+                                <input type='text' className='form-control font-weight-bolder' name='course_name' onChange={handleInput} />
                             </div>
                             <div className='col-md-6 pb-2'>
                                 <label className='font-weight-bolder'>Course Instructor</label>
-                                <input type='text' className='form-control' name="course_instructor" onChange={handleInput}/>
+                                <select className='form-control font-weight-bolder' name="course_instructor" onChange={handleInput}>
+                                    <option className='font-weight-bolder'>----Select Instructor----</option>
+                                    {
+                                        data.map((item)=>(
+                                            <option className='font-weight-bolder' value={item.faculty_name}>{item.faculty_name}</option>
+                                        ))
+                                    }
+                                </select>
                             </div>
                             <div className='col-md-6 pb-2'>
                                 <label className='font-weight-bolder'>Course Duration</label>
-                                <input type='number' className='form-control' name="duration" onChange={handleInput}/>
+                                <input type='number' className='form-control font-weight-bolder' name="duration" onChange={handleInput}/>
                             </div>
                             <div className='col-md-6 pb-2'>
                                 <label className='font-weight-bolder'>Start Date</label>
-                                <input type='date' className='form-control' name="start_date" onChange={handleInput}/>
+                                <input type='date' className='form-control font-weight-bolder' name="start_date" onChange={handleInput}/>
                             </div>
                             <div className='col-md-6 pb-2'>
                                 <label className='font-weight-bolder'>End Date</label>
-                                <input type='date' className='form-control' name="end_date" onChange={handleInput}/>
+                                <input type='date' className='form-control font-weight-bolder' name="end_date" onChange={handleInput}/>
                             </div>
                             <div className='col-md-6 pb-2'>
                                 <label className='font-weight-bolder'>Course Level</label>
@@ -128,7 +147,7 @@ function Add_Course() {
                             </div>
                             <div className='col-md-6 pb-2'>
                                 <label className='font-weight-bolder'>Course Price</label>
-                                <input type='number' className='form-control' name="price" onChange={handleInput}/>
+                                <input type='number' className='form-control font-weight-bolder' name="price" onChange={handleInput}/>
                             </div>
                             <div className='col-md-6 pb-2'>
                                 <label className='font-weight-bolder'>Course Status</label>
@@ -140,7 +159,7 @@ function Add_Course() {
                             </div>
                             <div className='col-md-6 pb-2'>
                                 <label className='font-weight-bolder'>Course Image</label>
-                                <input type='file' className='form-control' name="course_img" accept='image/*' onChange={handleInputImage}/>
+                                <input type='file' className='form-control font-weight-bolder' name="course_img" accept='image/*' onChange={handleInputImage}/>
                             </div>
                         </div>
                         <button type='submit' className='btn btn-success mt-3'  style={{marginBottom: 20, marginLeft: 300}}>Enroll Student</button>

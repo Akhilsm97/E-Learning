@@ -1,30 +1,65 @@
-import React from 'react'
+import React, {useState, useEffect} from 'react'
+import NavBar from '../NavBar'
+import Banner from './Banner'
+import CourseDetails from './CourseDetails'
+import Stud_profile from './Stud_profile'
+import Cart from './Cart'
+import WishList from './WishList'
 
-function HomePage() {
+function HomePage({ isAuthenticated, onLogout }) {
+  const [activeLink, setActiveLink] = useState('');
+  const[user, setUser ] = useState('')
+
+  const handleLinkClick = (linkName, username) => {
+    setActiveLink(linkName);
+    setUser(username)
+  };
+
+  useEffect(() => {
+    // Set 'home' as active link when the component mounts
+    setActiveLink('home');
+  }, []); // Empty dependency array ensures this effect runs only once, on mount
+
+  useEffect(() => {
+    console.log('State Value Name', activeLink);
+  }, [activeLink]);
+
+  let displayedComponent = null;
+
+  if (isAuthenticated) {
+    if (activeLink === 'home'){
+      <h2>hjfhgjkfhgjh</h2>
+    }
+    else if (activeLink === 'all-courses') {
+      displayedComponent = <Stud_profile username = {user} />;
+    }else if (activeLink === 'wish') {
+      displayedComponent = <WishList />;
+    } 
+    else if (activeLink === 'cart') {
+      displayedComponent = <Cart  username = {user}/>;
+    } 
+  }
+
+  console.log('Displayed Component', displayedComponent);
   return (
    <>
 
-<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
-  Launch demo modal
-</button>
+  <NavBar isAuthenticated={isAuthenticated} onLogout={onLogout} handleLinkClick={handleLinkClick} />
 
-<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        ...
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary">Save changes</button>
-      </div>
-    </div>
-  </div>
-</div>
+  
+
+  {isAuthenticated ? (
+  <>
+  {displayedComponent }
+  </>
+  ) : (
+        <>
+          <Banner />
+        <CourseDetails />
+        
+        </>
+    )}
+
 </>
   )
 }

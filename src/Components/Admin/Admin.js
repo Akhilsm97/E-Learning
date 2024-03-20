@@ -9,6 +9,11 @@ import Course_Mod from './Course_Mod';
 import Module_Details from './Module_Details';
 import { Modal } from 'bootstrap';
 import Upload from './images/upload.png';
+import { Link } from 'react-router-dom';
+import Edit from './images/edit2.png';
+import Uploaded_Questions from './Uploaded_Questions';
+import AddFaculty from './AddFaculty';
+import FacultyDetails from './FacultyDetails';
 
 function Admin() {
     function getDate() {
@@ -129,6 +134,7 @@ const handleSubmit = async (e) => {
                 position: toast.POSITION.TOP_CENTER,
                 theme: 'colored'
             });
+            e.target.reset();
         }
     } catch (error) {
         console.log('Error occurred:', error);
@@ -186,6 +192,7 @@ const handleSubmits = async (e) => {
                 position: toast.POSITION.TOP_CENTER,
                 theme: 'colored'
             });
+            e.target.reset();
         }
     } catch (error) {
         console.log('Error occurred:', error);
@@ -297,7 +304,7 @@ const [courses, setCourses] = useState([]);
                     position: toast.POSITION.TOP_CENTER,
                     theme: 'colored',
                 });
-                
+                e.target.reset();
             }
         }catch(error){
             console.log(error)
@@ -453,6 +460,7 @@ const [courses, setCourses] = useState([]);
                             position: toast.POSITION.TOP_CENTER,
                             theme: 'colored'
                         });
+                        e.target.reset();
                     }
                 } catch (error) {
                     console.log('Error occurred:', error);
@@ -602,6 +610,7 @@ const [courses, setCourses] = useState([]);
                             position: toast.POSITION.TOP_CENTER,
                             theme: 'colored'
                         });
+                        e.target.reset();
                     }
                 } catch (error) {
                     console.log('Error occurred:', error);
@@ -617,7 +626,7 @@ const [courses, setCourses] = useState([]);
                 try {
                     const response = await axios.get(`http://127.0.0.1:8000/course-materials/count/`);
                     setClassCount(response.data);
-                    console.log("RESPONSE DATA", response);
+                    
                 } catch (error) {
                     console.error("Error fetching course materials:", error);
                 }
@@ -626,19 +635,282 @@ const [courses, setCourses] = useState([]);
             useEffect(() => {
                 fetchClass();
             }, [classCount]);
+
+
+            const [selectedOption, setSelectedOption] = useState();
+            const [fetchedData, setFetchedData] = useState([]);
+
+            const handleDropdownChange = (event) => {
+                const data_select = event.target.value;
+                setSelectedOption(data_select);
+                console.log('Selected Data',data_select)
+              };
+              const fetchDataFromApi = async (selectedOption) => {
+                try {
+                  const response = await fetch(`http://127.0.0.1:8000/topic_details/${selectedOption}`);
+                  const data = await response.json();
+                  console.log(data)
+                  setFetchedData(data);
+                } catch (error) {
+                  console.error('Error fetching data:', error);
+                }
+              };
+            
+              // Trigger the API call when the dropdown selection changes
+              useEffect(() => {
+                if (selectedOption) {
+                  fetchDataFromApi(selectedOption);
+                }
+              }, [selectedOption]);
+
+              const [assessmentData, setAssessmentData] = useState({
+                course_enrollment_id:'',
+                module:'',
+                exam_level: '',
+                total_question: '',
+                total_points:'',
+                pass_mark:''
+
+            });
+
+
+              const handleAssessment=(e)=>{
+                const { name, value } = e.target;
+                setAssessmentData({ ...assessmentData, [name]: value });
+                console.log(assessmentData)
+              }
+
+              const handleSubmitAss = async (e) => {
+                e.preventDefault();
+                console.log("Entered Value is", assessmentData);
+
+                const formDataAssess = new FormData();
+
+                formDataAssess.append("course_enrollment_id", up.course_enrollment_id);
+                formDataAssess.append("module", up.module);
+                formDataAssess.append("exam_level", assessmentData.exam_level)
+                formDataAssess.append("total_question", assessmentData.total_question);
+                formDataAssess.append("total_points", assessmentData.total_points);
+                formDataAssess.append("pass_mark", assessmentData.pass_mark);
+            
+                try {
+                    const response = await axios.post('http://127.0.0.1:8000/assessment/', formDataAssess);
+            
+                    if (response.status === 201) {
+                        toast.success("Assessment Data Added Successfully", {
+                            position: toast.POSITION.TOP_CENTER,
+                            theme: 'colored'
+                        });
+                        fetchDataFromApi()
+                        e.target.reset();
+                        
+                    }
+                } catch (error) {
+                    console.log('Error occurred:', error);
+                }
+            };
+
+
+            const [selectedOptions, setSelectedOptions] = useState();
+            const [fetchedDatas, setFetchedDatas] = useState([]);
+            const [q_data, setQ_data] = useState({})
+            const [q_datas, setQ_datas] = useState([])
+
+            const handleDropdownQChange = (event) => {
+                const data_selects = event.target.value;
+                setSelectedOptions(data_selects);
+                console.log('Selected Data',data_selects)
+              };
+              const fetchDataFromApis = async (selectedOptions) => {
+                try {
+                  const response = await fetch(`http://127.0.0.1:8000/assessmentQ/${selectedOptions}`);
+                  const data = await response.json();
+                  console.log(data)
+                  setFetchedDatas(data);
+                } catch (error) {
+                  console.error('Error fetching data:', error);
+                }
+
+                fetch('http://127.0.0.1:8000/course_details/' + selectedOptions)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    setQ_data(data); // Set initial state with fetched data
+                    setOriginalData(data); // Set original data for comparison
+                })
+                .catch(error => {
+                    console.error('Error fetching data:', error);
+                    // Handle error
+                });
+
+
+
+                fetch('http://127.0.0.1:8000/topic_details/' + selectedOptions)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                    
+                })
+                .then(data => {
+                    console.log(data)
+                    setQ_datas(data); // Set initial state with fetched data
+                    setOriginalData(data); // Set original data for comparison
+                })
+                .catch(error => {
+                    console.error('Error fetching data:', error);
+                    // Handle error
+                });
+
+              };
+            
+              // Trigger the API call when the dropdown selection changes
+              useEffect(() => {
+                if (selectedOptions) {
+                  fetchDataFromApis(selectedOptions);
+                }
+              }, [selectedOptions]);
+
+              const [question, setQuestion] = useState([]);
+              const [newValue, setNewValue] = useState({
+                course_enroll_id: '',
+                module: '',
+              });
+
+
+              const [q_questionCount, setQ_QuestionCount] = useState();
+                
+              const uploadQuestions = (course_id, module_id) => {
+                setNewValue({
+                    course_enroll_id: course_id,
+                    module: module_id,
+                });
+            
+                fetch(`http://127.0.0.1:8000/course_module/${course_id}/${module_id}/`)
+                    .then(response => response.json())
+                    .then(res => setQuestion(res))
+                    .catch(error => console.error('Error fetching questions data:', error));
+            
+                fetch(`http://127.0.0.1:8000/Q_count/${course_id}/${module_id}/`)
+                    .then(response => response.json())
+                    .then(res => setQ_QuestionCount(res.Q_count))
+                    .catch(error => console.error('Error fetching question count data:', error));
+            };
+            
+            const [handleQuestions, setHandleQuestions] = useState({
+                question: '',
+                option_1: '',
+                option_2: '',
+                option_3: '',
+                option_4: '',
+                correct_answer: ''
+            });
+
+              const handleQuestionChange = (event, fieldName) => {
+                const value = event.target.value;
+                setHandleQuestions(prevUpdate => ({
+                  ...prevUpdate,
+                  [fieldName]: value,
+                }));
+              }
+
+
+            
+              const submitQuestion = async (e) => {
+                e.preventDefault();
+                console.log('Current handleQuestions state:', handleQuestions);
+              
+                // Assuming question is defined somewhere
+                console.log('Question:', question);
+              
+                // Assuming handleQuestions state is properly updated, log each field to verify
+                console.log('Question:', handleQuestions.question);
+                console.log('Option 1:', handleQuestions.option_1);
+                console.log('Option 2:', handleQuestions.option_2);
+                console.log('Option 3:', handleQuestions.option_3);
+                console.log('Option 4:', handleQuestions.option_4);
+                console.log('Correct Answer:', handleQuestions.correct_answer);
+
+                console.log('Course ID:', newValue.course_enroll_id);
+                console.log('Module', newValue.module);
+
+              
+                // Construct FormData object as before
+                const questionData = new FormData();
+                questionData.append('course_enrollment_id', newValue.course_enroll_id);
+                questionData.append('module', newValue.module);
+                questionData.append('assessment_name', 'Module Assessment');
+                questionData.append('question', handleQuestions.question);
+                questionData.append('option_1', handleQuestions.option_1);
+                questionData.append('option_2', handleQuestions.option_2);
+                questionData.append('option_3', handleQuestions.option_3);
+                questionData.append('option_4', handleQuestions.option_4);
+                questionData.append('correct_answer', handleQuestions.correct_answer);
+                questionData.append('status', 'Inactive');
+                questionData.append('submission_method', 'Online');
+                questionData.append('question_no',q_questionCount +1)
+              
+                console.log('After Submission', questionData.course_enrollment_id);
+                try {
+                   
+
+
+                    const response = await axios.post('http://127.0.0.1:8000/create_assessment/', questionData);
+                    console.log(response.data)
+
+                    fetchData();
+                    
+            
+                    if (response.status === 201) {
+                        toast.success("Question Added Successfully", {
+                            position: toast.POSITION.TOP_CENTER,
+                            theme: 'colored'
+                        });
+                        e.target.reset();
+                    }
+                } catch (error) {
+                    console.log('Error occurred:', error);
+                }
+            };
+              
+            const[questionCount, setQuestionCount] = useState([])
+            const fetchQuest = async () => {
+                try {
+                    const response = await axios.get(`http://127.0.0.1:8000/course-question/count/`);
+                    setQuestionCount(response.data);
+                    
+                } catch (error) {
+                    console.error("Error fetching course materials:", error);
+                }
+            };
+        
+            useEffect(() => {
+                fetchQuest();
+            }, [questionCount]);
+
+
+
+
+           
+
     
   return (
     <>
     
      <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
             <a class="navbar-brand font-weight-bolder" href="index.html">E-LEARNING</a>
-            <button class="btn btn-link btn-sm order-1 order-lg-0" id="sidebarToggle" href="#"><i class="fas fa-bars"></i></button>
+            <button class="btn btn-link btn-sm order-1 order-lg-0" id="sidebarToggle" href="#"><i class="fa fa-bars" aria-hidden="true"></i></button>
          
             <form class="d-none d-md-inline-block form-inline ml-auto mr-0 mr-md-3 my-2 my-md-0">
                 <div class="input-group">
                     <input class="form-control" type="text" placeholder="Search for..." aria-label="Search" aria-describedby="basic-addon2" />
                     <div class="input-group-append">
-                        <button class="btn btn-primary" type="button"><i class="fas fa-search"></i></button>
+                        <button class="btn btn-primary" type="button"><i class="fa fa-search" aria-hidden="true"></i></button>
                     </div>
                 </div>
             </form>
@@ -662,38 +934,36 @@ const [courses, setCourses] = useState([]);
                 <div class="nav">
                     <div class="sb-sidenav-menu-heading">Core</div>
                     <a class="nav-link " id="home-tab" data-toggle="tab" href="#home" role="tab" aria-controls="home"  aria-selected="true">
-                        <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
+                        <div class="sb-nav-link-icon"><i class="fa fa-tachometer" aria-hidden="true"></i></div>
                         Dashboard
                     </a>
-                    <div class="sb-sidenav-menu-heading">
-                       STUDENT ENROLLMENTS
-                    </div>
+                   
                     <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapsePages" aria-expanded="false" aria-controls="collapsePages">
                         <div class="sb-nav-link-icon"><i class="fas fa-book-open"></i></div>
-                              Enrollments
-                        <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                              <p className='font-weight-bolder'> <i class="fa fa-bookmark-o" aria-hidden="true"></i> &nbsp;Enrollments</p>
+                        <div class="sb-sidenav-collapse-arrow"><i class="fa fa-sort-desc" aria-hidden="true"></i></div>
                     </a>
                     <div class="collapse" id="collapsePages" aria-labelledby="headingTwo" data-parent="#sidenavAccordion">
                         <nav class="sb-sidenav-menu-nested nav">
-                            <a class="nav-link" id="social-tab" data-toggle="tab" href="#social" role="tab" aria-controls="social" aria-selected="false">
-                                <div class="sb-nav-link-icon"><i class="fas fa-columns"></i></div>
+                            <a class="nav-link " id="social-tab" data-toggle="tab" href="#social" role="tab" aria-controls="social" aria-selected="false">
+                                <div class="sb-nav-link-icon"><i class="fa fa-user-o" aria-hidden="true"></i></div>
                                 Add Enrollments
                             </a>
                             <a class="nav-link" id="enrolled-tab" data-toggle="tab" href="#enrolled" role="tab" aria-controls="enrolled" aria-selected="false">
-                                <div class="sb-nav-link-icon"><i class="fas fa-columns"></i></div>
+                                <div class="sb-nav-link-icon"><i class="fa fa-user-o" aria-hidden="true"></i></div>
                                 Enrolled Students
                             </a>
                                           
                         </nav>
                     </div>
 
-                    <div class="sb-sidenav-menu-heading">COURSE ENROLLMENT</div>
+                    
 
 
                     <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapsePagess" aria-expanded="false" aria-controls="collapsePagess">
                         <div class="sb-nav-link-icon"><i class="fas fa-book-open"></i></div>
-                              Course Enrollments
-                        <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                              <p className='font-weight-bolder'> <i class="fa fa-crosshairs" aria-hidden="true"></i> &nbsp;Course Enrollments</p>
+                        <div class="sb-sidenav-collapse-arrow"><i class="fa fa-sort-desc" aria-hidden="true"></i></div>
                     </a>
                     <div class="collapse" id="collapsePagess" aria-labelledby="headingTwo" data-parent="#sidenavAccordion">
                         <nav class="sb-sidenav-menu-nested nav">
@@ -709,6 +979,61 @@ const [courses, setCourses] = useState([]);
                                 <div class="sb-nav-link-icon"><i class="fas fa-table"></i></div>
                                 Add Course Modules
                             </a>
+                                          
+                        </nav>
+                    </div>
+
+
+                   
+
+                    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseAssess" aria-expanded="false" aria-controls="collapseAssess">
+                        <div class="sb-nav-link-icon"><i class="fas fa-book-open"></i></div>
+                        <p className='font-weight-bolder'><i class="fa fa-book" aria-hidden="true"></i> &nbsp;Course Assessments</p>
+                        <div class="sb-sidenav-collapse-arrow"><i class="fa fa-sort-desc" aria-hidden="true"></i></div>
+                    </a>
+                    <div class="collapse" id="collapseAssess" aria-labelledby="headingTwo" data-parent="#sidenavAccordion">
+                        <nav class="sb-sidenav-menu-nested nav">
+                            <a class="nav-link"  
+                            
+                            >
+                                <div class="sb-nav-link-icon"><i class="fas fa-chart-area"></i></div>
+                                Create Assessments
+                            </a>
+                             <a class="nav-link"  id="assess_quest-tab" data-toggle="tab" href="#assess_quest" role="tab" aria-controls="assess_quest" aria-selected="false">
+                                <div class="sb-nav-link-icon"><i class="fas fa-chart-area"></i></div>
+                                Add Questions
+                            </a>
+                             <a class="nav-link" id="questions-tab" data-toggle="tab" href="#questions" role="tab" aria-controls="questions" aria-selected="false">
+                                <div class="sb-nav-link-icon"><i class="fas fa-table"></i></div>
+                                Questions
+                            </a> 
+                                          
+                        </nav>
+                    </div>
+
+
+
+                   
+
+                    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseFaculty" aria-expanded="false" aria-controls="collapseAssess">
+                        <div class="sb-nav-link-icon"><i class="fas fa-book-open"></i></div>
+                        <p className='font-weight-bolder'><i class="fa fa-users" aria-hidden="true"></i> &nbsp; Faculty</p>
+                        <div class="sb-sidenav-collapse-arrow"><i class="fa fa-sort-desc" aria-hidden="true"></i></div>
+                    </a>
+                    <div class="collapse" id="collapseFaculty" aria-labelledby="headingTwo" data-parent="#sidenavAccordion">
+                        <nav class="sb-sidenav-menu-nested nav">
+                            <a class="nav-link"  id="faculty-tab" data-toggle="tab" href="#faculty" role="tab" aria-controls="faculty" aria-selected="false">
+                                <div class="sb-nav-link-icon"><i class="fas fa-chart-area"></i></div>
+                                Faculty Details
+                            </a>
+                             <a class="nav-link"  id="facultyAdd-tab" data-toggle="tab" href="#facultyAdd" role="tab" aria-controls="facultyAdd" aria-selected="false">
+                                <div class="sb-nav-link-icon"><i class="fas fa-chart-area"></i></div>
+                                Add Faculty
+                            </a>
+                             <a class="nav-link" id="questions-tab" data-toggle="tab" href="#questions" role="tab" aria-controls="questions" aria-selected="false">
+                                <div class="sb-nav-link-icon"><i class="fas fa-table"></i></div>
+                                Questions
+                            </a> 
                                           
                         </nav>
                     </div>
@@ -740,7 +1065,7 @@ const [courses, setCourses] = useState([]);
     <div id="layoutSidenav_content">
         <div class="tab-content" id="myTabContent">
             <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
-            <div class="container" style={{padding: 30}}>
+                <div class="container" style={{padding: 30}}>
                         
                             <div class="row">
                                 <div class="col-md-4">
@@ -1055,6 +1380,8 @@ const [courses, setCourses] = useState([]);
 
 
 
+
+
 {/* --------------------------------------------------------------Modules Details  -------------------------------------------------------------*/}
 
 
@@ -1147,7 +1474,7 @@ const [courses, setCourses] = useState([]);
                                         <p>Module Contents</p>
                                     </div>
                                     <div className='col-md-8 ' >
-                                        <div className='inner' style={{ marginLeft:380}}>
+                                        <div className='inner' style={{ marginLeft:200}}>
                                             <a className='btn btn-success ' href="#" data-toggle="modal" data-target="#myModalmat">+ Create New Video</a>
                                             <a className='btn btn-warning ml-2 text-dark' href="#" data-toggle="modal" data-target="#myModalTask"> + Upload PDF/ Task</a>
                                         </div>
@@ -1198,6 +1525,179 @@ const [courses, setCourses] = useState([]);
                             </div>
 
             </div>
+
+            <div class="tab-pane fade" id="assessment" role="tabpanel" aria-labelledby="assessment-tab">
+
+                         <div className='container p-4 mt-3 ' style={{backgroundColor:'#F8F8FF', border:'solid 1px lightgrey'}}>
+                                <h2 className='font-weight-bolder'>Create Assessment Here</h2>
+                            </div>
+                            <div className='container p-3' style={{ border:'solid 1px lightgrey'}}>
+                                <div className='row'>
+                                    <div className='col-md-4' >
+                                        <p className='font-weight-bold font-italic'>ASSESSMENTS</p>
+                                    </div>
+                                    <div className='col-md-8 '  >
+                                        <div className='inner' style={{  display: 'flex', alignItems: 'center',width:'80%'}}>
+
+                                            <label style={{width:'50%',marginLeft:200}} >Select Course</label>
+                                            <select className='form-control font-weight-bold' name='course_name' value={selectedOption} onChange={handleDropdownChange} style={{width:'100%'}}>
+                                                <option className='font-weight-bold'>-------Select Course-------</option>
+                                                {
+                                                    course.map((items)=>(
+                                                        
+                                                        <option className='font-weight-bold' value={items.course_enrollment_id}>{items.course_name}</option>
+                                                    ))
+                                                }
+                                                
+                                            </select> 
+                                        </div>
+                                    </div>
+
+                                </div>
+                        </div>
+
+                        <div className='container'>
+                            
+                            
+                                <div className='row'>
+                                
+                                {fetchedData.map((it)=>(
+                                <div className='col-md-4 p-4'>   
+                                    <div class="card border-primary mb-3" style={{maxWidth: '18rem'}}>
+                                        <div class="card-header font-weight-bold">#Module {it.module}</div>
+                                        <div class="card-body">
+                                            <h5 class="card-title font-italic">{it.topic_title}</h5>
+                                            <p class="card-text p-2 "><Link to="#" className='btn btn-primary font-weight-bold' data-toggle="modal" data-target="#myModalAssess" onClick={()=>updateModules(it.id)} >Create Assessment </Link></p>
+                                        </div>
+                                    </div>
+                                </div> 
+                            ))}
+                            </div>
+                        </div>
+
+            </div>
+            <div class="tab-pane fade" id="assess_quest" role="tabpanel" aria-labelledby="assess_quest-tab">
+
+
+                            <div className='container p-4 mt-3 ' style={{backgroundColor:'#F8F8FF', border:'solid 1px lightgrey'}}>
+                                    <h2 className='font-weight-bolder'>Create Question Here</h2>
+                            </div>
+                            <div className='container p-3' style={{ border:'solid 1px lightgrey'}}>
+                                <div className='row'>
+                                    <div className='col-md-4' >
+                                        <p className='font-weight-bold font-italic'>ASSESSMENTS OUESTIONS</p>
+                                    </div>
+                                    <div className='col-md-8 '  >
+                                        <div className='inner' style={{  display: 'flex', alignItems: 'center',width:'80%'}}>
+
+                                            <label style={{width:'50%',marginLeft:200}} >Select Course</label>
+                                            <select className='form-control font-weight-bold' name='course_name' value={selectedOptions} onChange={handleDropdownQChange} style={{width:'100%'}}>
+                                                <option className='font-weight-bold'>-------Select Course-------</option>
+                                                {
+                                                    course.map((items)=>(
+                                                        
+                                                        <option className='font-weight-bold' value={items.course_enrollment_id}>{items.course_name}</option>
+                                                    ))
+                                                }
+                                                
+                                            </select> 
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                            
+
+
+                        <div class="accordion accordion-flush" id="accordionFlushExample">
+                        <div className='row'>
+                            {fetchedDatas.map((data, index) => (
+                                
+                                    <div className='col-md-6'>
+                                    <div class="accordion-item p-3" key={index}>
+                                        <h2 class="accordion-header">
+                                            
+                                            
+                                            {
+                                                q_datas.map((itemz)=>(
+
+
+                                                    <>
+                                                    
+                                                    {
+                                                        data.module === itemz.module ? (
+
+                                                            <p class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target={`#flush-collapse-${index}`} aria-expanded="false" aria-controls={`flush-collapse-${index}`} style={{fontSize:20}}>Assessment # {itemz.topic_title}</p>
+                                                        ):null
+                                                    }
+                                                    </>
+                                                ))
+                                            }
+                                            
+                                            
+                                        </h2>
+                                        <div id={`flush-collapse-${index}`} class="accordion-collapse collapse" data-bs-parent="#accordionFlushExample">
+                                            <div class="accordion-body  w-80 shadow-sm p-2 mb-5 bg-body-tertiary rounded font-weight-bold" style={{border: 'solid 1px lightgrey'}}>
+                                                <div className='row'>
+                                                    <div className='col-md-8' style={{textAlign: 'left',borderRight:'solid 2px lightgrey'}}>
+                                                        <p>Assessment Level: &emsp;&emsp;&emsp;{data.exam_level}</p>
+                                                        <p>Total Questions:  &emsp;&emsp;&emsp;&emsp; {data.total_question}</p>
+
+                                                        
+                                                        {questionCount.map((items) => (
+                                                            <div>
+                                                            {data.course_enrollment_id === items.course_enrollment_id && data.module === items.module  ? (
+                                                                <p>Uploaded Questions:&emsp;&emsp; {items.total_count} </p>
+                                                                
+                                                            ) : null}
+                                                        </div>
+                                                        ))}
+
+                                                        {questionCount.map((items) => (
+                                                            <div>
+                                                            {data.total_question === items.total_count   ? (
+                                                                <p>Status: &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;Upload Pending</p>
+                                                                
+                                                            ) : null}
+                                                        </div>
+                                                        ))}
+
+                                                        
+
+
+                                                        <p>Status: &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;Upload Pending</p>
+                                                    </div>
+                                                    <div className='col-md-4 p-4' >
+                                                        <p>Add Question</p>
+                                                        <Link to="#" className='pl-4' data-toggle="modal" data-target="#myModalQ" onClick={()=>uploadQuestions(data.course_enrollment_id,data.module)}><img src={Edit} style={{width:30}}></img></Link>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    </div>
+                                
+                            ))}
+                            </div>
+                        </div>
+
+                        
+                    
+
+                    
+            </div>
+            <div class="tab-pane fade" id="questions" role="tabpanel" aria-labelledby="questions-tab">
+                <Uploaded_Questions />
+            </div>
+
+            <div class="tab-pane fade" id="faculty" role="tabpanel" aria-labelledby="faculty-tab">
+                <FacultyDetails />
+            </div>
+            <div class="tab-pane fade" id="facultyAdd" role="tabpanel" aria-labelledby="facultyAdd-tab">
+                <AddFaculty />
+            </div>
+            
             
             
 
@@ -1350,7 +1850,7 @@ const [courses, setCourses] = useState([]);
                         </div>
                     </div>
                     <div class="modal-footer">
-                    {showModal &&<button type="button" class="btn btn-secondary">Close</button>}
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal" >Close</button>
                         
                     </div>
                     </div>
@@ -1563,6 +2063,160 @@ const [courses, setCourses] = useState([]);
                     </div>
                 </div>
             </div>  
+
+
+          {/* ---------------------------------------------------------ASSESSMENT -----------------------------------------------------------   */}
+
+          <div  className="modal fade" id="myModalAssess" tabIndex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div className="modal-dialog modal-lg" style={{width:680}} >
+            <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title font-italic" id="exampleModalLabel">Create Assessment</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+            </div>
+            <form onSubmit={handleSubmitAss}>
+            <div class="modal-body">
+
+                <div className='container'>
+                 
+                    <div className='row'>
+                        
+                    <div className='col-md-6' style={{  display: 'flex', alignItems: 'center' }} >
+                            <label className='font-weight-bold'>Course Id:</label>
+                            <input type='number' className='form-control' name="course_enrollment_id" value={up.course_enrollment_id} onChange={handleAssessment} readOnly></input>
+                        </div>
+                        <div className='col-md-6' style={{  display: 'flex', alignItems: 'center' }} >
+                            <label className='font-weight-bold'>Module:</label>
+                            <input type='number' className='form-control ml-2' name="module" value={up.module} onChange={handleAssessment} readOnly></input>
+                        </div>
+                        <div className='col-md-6' style={{  display: 'flex', alignItems: 'center' }}>
+                            <label className='font-weight-bold'>Exam Level:</label>
+                            <select className='form-control ml-2' name="exam_level" onChange={handleAssessment} >
+                                <option>--Assessment Level--</option>
+                                <option value="Easy">Easy</option>
+                                <option value="Medium"> Medium</option>
+                                <option value="Advanced">Advanced</option>
+                            </select>
+                        </div>
+                        <div className='col-md-6' style={{  display: 'flex', alignItems: 'center' }}>
+                            <label className='font-weight-bold'>Total Questions:</label>
+                            <input type='number' className='form-control ml-2' name="total_question" onChange={handleAssessment}></input>
+                        </div>
+                        <div className='col-md-12' style={{  display: 'flex', alignItems: 'center' }}>
+                            <label className='font-weight-bold'>Total Marks:</label>
+                            <input type='number' className='form-control ml-2' name="total_points" onChange={handleAssessment} ></input>
+                        </div>
+                        <div className='col-md-12' style={{  display: 'flex', alignItems: 'center' }}>
+                            <label className='font-weight-bold'>Pass Mark:</label>
+                            <input type='number' className='form-control ml-2' name="pass_mark" onChange={handleAssessment}></input>
+                        </div>
+                    </div>
+                     
+                </div>
+              
+            
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-primary" >Save Changes</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                
+            </div>
+            </form>
+            </div>
+        </div>
+    </div>  
+
+{/* ---------------------------------------------------------------------UPLOAD QUESTIONS --------------------------------------------------- */}
+
+    <div  className="modal fade" id="myModalQ" tabIndex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div className="modal-dialog modal-lg" style={{width:700}} >
+            <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title " id="exampleModalLabel">Upload Questions</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+            </div>
+            <form onSubmit={submitQuestion}>
+            <div class="modal-body">
+
+                {}
+                <p className='font-weight-bold ml-4' >Question: #{q_questionCount +1}</p>
+
+                {/* {questionCount.map((item)=>(
+                        <>
+                        {
+                            q.course_enrollment_id === item.course_enrollment_id && q.module === item.module ?(
+                                <p>Question: {item.total_count}</p>
+                            ):null
+                        }
+                        </>
+                    ))
+                } */}
+
+            
+
+            <div className='container'>
+                <div className='row'>
+                    <div className='col-md-6' style={{  display: 'flex', alignItems: 'center' }}>
+                      
+                            <label>Course Id:</label>
+                            {question.map((q, index) => (<input type='text' className='form-control' name="course_enrollment_id" value={q.course_enrollment_id} onChange={(event)=>handleQuestionChange(event, 'course_enrollment_id')} ></input>))}
+                    </div>
+                    <div className='col-md-6' style={{  display: 'flex', alignItems: 'center' }}>
+                      
+                            <label>Module:</label>
+                            {question.map((q, index) => (<input type='text' className='form-control' name="module" value={q.module} onChange={(event)=>handleQuestionChange(event, 'module')} ></input>))}
+                    </div>
+                    <div className='col-md-12' style={{  display: 'flex', alignItems: 'center' }}>
+                      
+                            <label>Question:</label>
+                            <textarea type='text' className='form-control' name="question" onChange={(event)=>handleQuestionChange(event, 'question')}></textarea>
+                    </div>
+                    <div className='col-md-6' style={{  display: 'flex', alignItems: 'center' }}>
+                      
+                            <label>Option 1:</label>
+                            <input type='text' className='form-control' name="option_1" onChange={(event)=>handleQuestionChange(event, 'option_1')} ></input>
+                    </div>
+                    <div className='col-md-6' style={{  display: 'flex', alignItems: 'center' }}>
+                      
+                            <label>Option 2:</label>
+                            <input type='text' className='form-control' name="option_2" onChange={(event)=>handleQuestionChange(event, 'option_2')}></input>
+                    </div>
+                    <div className='col-md-6' style={{  display: 'flex', alignItems: 'center' }}>
+                      
+                            <label>Option 3:</label>
+                            <input type='text' className='form-control' name="option_3" onChange={(event)=>handleQuestionChange(event, 'option_3')} ></input>
+                    </div>
+                    <div className='col-md-6' style={{  display: 'flex', alignItems: 'center' }}>
+                      
+                            <label>Option 4:</label>
+                            <input type='text' className='form-control'  name="option_4" onChange={(event)=>handleQuestionChange(event, 'option_4')}></input>
+                    </div>
+                    <div className='col-md-12' style={{  display: 'flex', alignItems: 'center' }}>
+                      
+                            <label>Correct Answer:</label>
+                            <input type='text' className='form-control' name="correct_answer" onChange={(event)=>handleQuestionChange(event, 'correct_answer')}></input>
+                    </div>
+                </div>
+            </div>
+
+              
+            
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-primary" >Save Changes</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                
+            </div>
+            </form> 
+            </div>
+        </div>
+    </div>
+
+          
     </>
   )
 }

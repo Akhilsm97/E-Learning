@@ -292,7 +292,7 @@ function Course_Details() {
                                                             <div className='col-md-6 pb-2'>
                                                                 <label className='font-weight-bolder'>Course Image</label><br />
                                                                 <img src={update.course_img} className='img-thumbnail'  style={{width:100, padding:10}}/>
-                                                                <input type='file' className='form-control' name="course_img" onChange={handleInputImage} accept='image/*' />
+                                                                <input type='file' className='form-control' name="course_img"    accept='image/*' />
                                                             </div>
                                                         </div>
                                                         <button type='submit' className='btn btn-success mt-3'  style={{marginBottom: 20, marginLeft: 300}}>Enroll Student</button>
