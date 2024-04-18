@@ -66,7 +66,7 @@ function NavBar({ isAuthenticated ,onLogout, handleLinkClick, activeLink}) {
                 {isAuthenticated ? (
                   <>
                   <li class="nav-item pl-2">
-                    <Link className={`nav-link active  ml-3 text-info font-weight-bold ${activeLink === 'home' ? 'active' : ''}`} aria-current="page" href="#">Home</Link>
+                    <Link className={`nav-link active  ml-3 text-info font-weight-bold ${activeLink === 'home' ? 'active' : ''}`} aria-current="page" to="/">Home</Link>
                     
                 </li>
                 <li class="nav-item pl-2">

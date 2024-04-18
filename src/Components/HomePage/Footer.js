@@ -5,7 +5,7 @@ function Footer() {
     <>
         <div className="container-fluid" >
 
-                <footer className="text-center text-lg-start text-white" style={{ backgroundColor: '#1c2331',width:1350, marginLeft:-30 }}>
+                <footer className="text-center text-lg-start text-white" style={{ backgroundColor: '#1c2331',width:1350,  }}>
 
                 <section className="d-flex justify-content-between p-4" style={{ backgroundColor: '#6351ce', width:'100%' }}>
 

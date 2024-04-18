@@ -52,15 +52,15 @@ function Course_Details() {
 
         // -----------------------------------------------------------Update ---------------------------------------
         const [update, setUpdate] = useState({})
-        const [showModal, setShowModal] = useState(false);
+       
         const [originalData, setOriginalData] = useState({});
         const[formData, setFormData] = useState({})
 
         const updateDetails = (course_enrollment_id)=>{
-            setShowModal(true)
+        
     
             console.log('Employee id', course_enrollment_id)
-            fetch(`http://127.0.0.1:8000/course_details/${course_enrollment_id}`)
+            fetch(`http://127.0.0.1:8000/course_details/${course_enrollment_id}/`)
             .then(response=>response.json())
             .then(res=>setUpdate(res))
         }
@@ -118,7 +118,7 @@ function Course_Details() {
                 },
             });
     
-             setShowModal(false)
+          
              
         
             toast.success("Course Updated Successful", {
@@ -130,7 +130,7 @@ function Course_Details() {
     // ---------------------------------------------------------Delete -----------------------------------------
 
     const handleDelete=((id) =>{
-        setShowModal(false)
+        
         fetch(`http://127.0.0.1:8000/course/${id}/delete/ ` ,
             {method: 'DELETE'})
             .then(()=>{
@@ -156,11 +156,11 @@ function Course_Details() {
                     <div class="row">
                         {
                             records.map((items)=>(
-                                <div class="col-md-4" style={{paddingLeft:10, paddingBottom:15}}>
+                                <div class="col-md-4 animate__animated animate__fadeInDown" style={{paddingLeft:10, paddingBottom:15}}>
                                     <div class="card" style={{width:400, height: 245}}>
                                         <div class="row g-0">
                                             <div class="col-md-6">
-                                                <img src={items.course_img} class="img-fluid rounded-start" style={{height:245}} alt="..." />
+                                                <img src={items.course_img} class="img-fluid rounded-start img-thumbnail shadow-lg" style={{height:245}} alt="..." />
                                             </div>
                                             <div class="col-md-6" style={{marginLeft:-30}}>
                                                 <div class="card-body">
@@ -182,8 +182,9 @@ function Course_Details() {
                                                             <p style={{color: 'red', display: 'inline'}} className='font-weight-bolder'>In Active</p>
                                                             </>
                                                     )}
-                                                <p class="card-text mt-2" style={{marginLeft: 90}}><a href="#" data-toggle="modal" data-target="#myModals" onClick={()=>{updateDetails(items.course_enrollment_id)}}><img src={Edit} style={{borderRadius: '50%', width: 20}} /></a>&emsp;
-                                                <a href="#" data-toggle="modal" data-target="#myModalss" onClick={()=>{updateDetails(items.course_enrollment_id)}} ><img src={Cross} style={{borderRadius: '50%', width: 20}} /></a>
+                                                <p class="card-text mt-2" style={{marginLeft: 90}}>
+                                                    <a href="#" data-toggle="modal" data-target="#myModalz" onClick={()=>{updateDetails(items.course_enrollment_id)}}><img src={Edit} style={{borderRadius: '50%', width: 20}} /></a>&emsp;
+                                                    <a href="#" data-toggle="modal" data-target="#myModalss" onClick={()=>{updateDetails(items.course_enrollment_id)}} ><img src={Cross} style={{borderRadius: '50%', width: 20}} /></a>
                                                 </p>
                                             </div>
                                         </div>
@@ -226,116 +227,115 @@ function Course_Details() {
 
                             {/* --------------------------------------------------Update Modal---------------- */}
 
-                            {showModal && (
+                         
 
-                                <div class="modal fade" id="myModals" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" style={{ display: 'block' }}>
-                                    <div class="modal-dialog modal-lg" role="document">
-                                        <div class="modal-content">
-                                            <div class="modal-header">
-                                                <h5 class="modal-title" id="exampleModalLabel">Update Course</h5>
-                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                                    <span aria-hidden="true">&times;</span>
-                                                </button>
-                                            </div>
-                                            <div class="modal-body">
+                                                    <div class="modal fade" id="myModalz" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                                            <div class="modal-dialog modal-lg" role="document">
+                                                                <div class="modal-content">
+                                                                    <div class="modal-header">
+                                                                        <h5 class="modal-title" id="exampleModalLabel">Modal Title</h5>
+                                                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                                            <span aria-hidden="true">&times;</span>
+                                                                        </button>
+                                                                    </div>
+                                                        <div class="modal-body">
 
-                                                <div className='container-fluid'>
-                                                    <form id="myForm" onSubmit={(e)=>handleSubmit(e, update.course_enrollment_id )}>
-                                                        <div className='row'>
-                                                            <div className='col-md-6 pb-2'>
-                                                                <label className='font-weight-bolder'>Course Id</label>
-                                                                <input type='text' className='form-control' name='course_enrollment_id' value={update.course_enrollment_id} onChange={(event)=>handleInputChange(event, 'course_enrollment_id')} />
-                                                            </div>
-                                                            <div className='col-md-6 pb-2'>
-                                                                <label className='font-weight-bolder'>Course Name</label>
-                                                                <input type='text' className='form-control' name='course_name' value={update.course_name} onChange={(event)=>handleInputChange(event, 'course_name')} />
-                                                            </div>
-                                                            <div className='col-md-6 pb-2'>
-                                                                <label className='font-weight-bolder'>Course Duration</label>
-                                                                <input type='number' className='form-control' name='duration' value={update.duration} onChange={(event)=>handleInputChange(event, 'duration')} />
-                                                            </div>
-                                                            <div className='col-md-6 pb-2'>
-                                                                <label className='font-weight-bolder'>Course Instructor</label>
-                                                                <input type='text' className='form-control' name="course_instructor" value={update.course_instructor} onChange={(event)=>handleInputChange(event, 'course_instructor')}/>
-                                                            </div>
-                                                            <div className='col-md-6 pb-2'>
-                                                                <label className='font-weight-bolder'>Start Date</label>
-                                                                <input type='date' className='form-control' name="start_date" value={update.start_date} onChange={(event)=>handleInputChange(event, 'start_date')}/>
-                                                            </div>
-                                                            <div className='col-md-6 pb-2'>
-                                                                <label className='font-weight-bolder'>End Date</label>
-                                                                <input type='date' className='form-control' name="end_date" value={update.end_date} onChange={(event)=>handleInputChange(event, 'end_date')}/>
-                                                            </div>
+                                                        <div className='container-fluid'>
+                                                            <form id="myForm" onSubmit={(e)=>handleSubmit(e, update.course_enrollment_id )}>
+                                                                <div className='row'>
+                                                                    <div className='col-md-6 pb-2'>
+                                                                        <label className='font-weight-bolder'>Course Id</label>
+                                                                            <input type='text' className='form-control' name='course_enrollment_id' value={update.course_enrollment_id} onChange={(event)=>handleInputChange(event, 'course_enrollment_id')} />
+                                                                                                    </div>
+                                                                            <div className='col-md-6 pb-2'>
+                                                                                <label className='font-weight-bolder'>Course Name</label>
+                                                                                <input type='text' className='form-control' name='course_name' value={update.course_name} onChange={(event)=>handleInputChange(event, 'course_name')} />
+                                                                            </div>
+                                                                            <div className='col-md-6 pb-2'>
+                                                                                <label className='font-weight-bolder'>Course Duration</label>
+                                                                                <input type='number' className='form-control' name='duration' value={update.duration} onChange={(event)=>handleInputChange(event, 'duration')} />
+                                                                            </div>
+                                                                            <div className='col-md-6 pb-2'>
+                                                                                <label className='font-weight-bolder'>Course Instructor</label>
+                                                                                <input type='text' className='form-control' name="course_instructor" value={update.course_instructor} onChange={(event)=>handleInputChange(event, 'course_instructor')}/>
+                                                                            </div>
+                                                                            <div className='col-md-6 pb-2'>
+                                                                                <label className='font-weight-bolder'>Start Date</label>
+                                                                                <input type='date' className='form-control' name="start_date" value={update.start_date} onChange={(event)=>handleInputChange(event, 'start_date')}/>
+                                                                            </div>
+                                                                            <div className='col-md-6 pb-2'>
+                                                                                <label className='font-weight-bolder'>End Date</label>
+                                                                                <input type='date' className='form-control' name="end_date" value={update.end_date} onChange={(event)=>handleInputChange(event, 'end_date')}/>
+                                                                            </div>
 
-                                                            <div className='col-md-6 pb-2'>
-                                                                <label className='font-weight-bolder'>Level</label>
-                                                                <select className='form-control font-weight-bolder' name="level" value={update.level} onChange={(event)=>handleInputChange(event, 'level')}>
-                                                                    
-                                                                    <option className='font-weight-bolder' value='Beginner'>Beginner</option>
-                                                                    <option className='font-weight-bolder' value='Intermediate'>Intermediate</option>
-                                                                    <option className='font-weight-bolder' value='Advanced'>Advanced</option>
-                                                                </select>
-                                                            </div>
-                                                            <div className='col-md-6 pb-2'>
-                                                                <label className='font-weight-bolder'>Price</label>
-                                                                <input type='number' className='form-control' name="price" value={update.price} onChange={(event)=>handleInputChange(event, 'price')}/>
-                                                            </div>
-                                                            <div className='col-md-6 pb-2'>
-                                                                <label className='font-weight-bolder'>Course Status</label>
-                                                                <select className='form-control font-weight-bolder' name="status" value={update.status} onChange={(event)=>handleInputChange(event, 'status')}>
-                                                                    
-                                                                    <option className='font-weight-bolder' value='Active'>Active</option>
-                                                                    <option className='font-weight-bolder' value='Inactive'>Inactive</option>
-                                                                </select>
-                                                            </div>
+                                                                            <div className='col-md-6 pb-2'>
+                                                                                <label className='font-weight-bolder'>Level</label>
+                                                                                <select className='form-control font-weight-bolder' name="level" value={update.level} onChange={(event)=>handleInputChange(event, 'level')}>
+                                                                                    
+                                                                                    <option className='font-weight-bolder' value='Beginner'>Beginner</option>
+                                                                                    <option className='font-weight-bolder' value='Intermediate'>Intermediate</option>
+                                                                                    <option className='font-weight-bolder' value='Advanced'>Advanced</option>
+                                                                                </select>
+                                                                            </div>
+                                                                            <div className='col-md-6 pb-2'>
+                                                                                <label className='font-weight-bolder'>Price</label>
+                                                                                <input type='number' className='form-control' name="price" value={update.price} onChange={(event)=>handleInputChange(event, 'price')}/>
+                                                                            </div>
+                                                                            <div className='col-md-6 pb-2'>
+                                                                                <label className='font-weight-bolder'>Course Status</label>
+                                                                                <select className='form-control font-weight-bolder' name="status" value={update.status} onChange={(event)=>handleInputChange(event, 'status')}>
+                                                                                    
+                                                                                    <option className='font-weight-bolder' value='Active'>Active</option>
+                                                                                    <option className='font-weight-bolder' value='Inactive'>Inactive</option>
+                                                                                </select>
+                                                                            </div>
 
-                                                            <div className='col-md-6 pb-2'>
-                                                                <label className='font-weight-bolder'>Course Image</label><br />
-                                                                <img src={update.course_img} className='img-thumbnail'  style={{width:100, padding:10}}/>
-                                                                <input type='file' className='form-control' name="course_img"    accept='image/*' />
-                                                            </div>
-                                                        </div>
-                                                        <button type='submit' className='btn btn-success mt-3'  style={{marginBottom: 20, marginLeft: 300}}>Enroll Student</button>
-                                                        </form>
-                                                </div>
-                                            </div>
-                                            <div class="modal-footer">
-                                                
-                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>   
-                                )} 
+                                                                            <div className='col-md-6 pb-2'>
+                                                                                <label className='font-weight-bolder'>Course Image</label><br />
+                                                                                <img src={update.course_img} className='img-thumbnail'  style={{width:100, padding:10}}/>
+                                                                                <input type='file' className='form-control' name="course_img"    accept='image/*' />
+                                                                            </div>
+                                                                        </div>
+                                                                        <button type='submit' className='btn btn-success mt-3'  style={{marginBottom: 20, marginLeft: 300}}>Update Course</button>
+                                                                        </form>
+                                                                </div>
+
+
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>      
+                          
 
 
                                 {/* --------------------------------------------------------------Delete Modal ----------------------------------- */}
    
-    {showModal && (
 
-        <div class="modal fade" id="myModalss" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-            <div class="modal-dialog" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="exampleModalLabel">Delete Student</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                    <div class="modal-body">
+                                <div class="modal fade" id="myModalss" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog" role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="exampleModalLabel">Modal Title</h5>
+                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                    <span aria-hidden="true">&times;</span>
+                                                </button>
+                                            </div>
+                                                <div class="modal-body">
 
-                        <p className='font-weight-bolder'> Are you want to delete {update.course_name}</p>
-                        
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-danger" onClick={()=>{handleDelete(update.course_enrollment_id)}}>Delete</button>
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    </div>
-                </div>
-            </div>
-        </div>   
-        )} 
-
+                                                    <p className='font-weight-bolder'> Are you want to delete {update.course_name}</p>
+                                                    
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-danger" onClick={()=>{handleDelete(update.course_enrollment_id)}}>Delete</button>
+                                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>   
+                            
 
 
         

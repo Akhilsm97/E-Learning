@@ -20,7 +20,7 @@ function MoreDetails() {
     }, [data])
 
     const[module, setModule] = useState([])
-    fetch('http://127.0.0.1:8000/topic_details/' + course_id)
+    fetch(`http://127.0.0.1:8000/topic_details/${course_id}/`)
     .then(response => {
         if (!response.ok) {
             throw new Error('Network response was not ok');

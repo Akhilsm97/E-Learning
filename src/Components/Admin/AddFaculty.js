@@ -79,7 +79,7 @@ const handleSubmit = async (e) => {
    <>
     <h2 className='text-center m-2 pb-2 font-weight-bolder'>Add Faculty Here</h2>
 
-                    <div className='container m-3'>
+                    <div className='container m-3 animate__animated animate__fadeInDown '>
                       <form id="myForm" onSubmit={handleSubmit}>
                         <div className='row'>
                             <div className='col-md-6 pb-2'>

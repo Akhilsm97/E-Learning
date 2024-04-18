@@ -102,7 +102,7 @@ function Add_Course() {
      <h3 className='text-center font-weight-bolder p-4'>Add Course Here </h3>
     
     <div className='container-fluid m-4 w-auto' >
-                    <div className='container-fluid p-5'>
+                    <div className='container-fluid p-5 animate__animated animate__fadeIn'>
                       <form id="myForm" onSubmit={handleSubmit}>
                         <div className='row'>
                             <div className='col-md-6 pb-2'>
@@ -162,7 +162,7 @@ function Add_Course() {
                                 <input type='file' className='form-control font-weight-bolder' name="course_img" accept='image/*' onChange={handleInputImage}/>
                             </div>
                         </div>
-                        <button type='submit' className='btn btn-success mt-3'  style={{marginBottom: 20, marginLeft: 300}}>Enroll Student</button>
+                        <button type='submit' className='btn btn-success mt-3'  style={{marginBottom: 20, marginLeft: 300}}>Add Course</button>
                         </form>
                     </div>
 

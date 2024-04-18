@@ -5,7 +5,7 @@ import Brand from './images/brand.png';
 import { useNavigate } from 'react-router-dom';
 
 function Register() {
-    const [formData, setFormData] = useState({});
+ 
     function getDate() {
         const today = new Date();
         const month = (today.getMonth() + 1).toString().padStart(2, '0');
@@ -14,43 +14,76 @@ function Register() {
         return `${year}-${month}-${date}`;
       }
 
-    const handleInput = (e) => {
-        const { name, value } = e.target;
-        setFormData({
-            ...formData,
-            [name]: value,
-            
-        });
-        console.log('Before'+formData)
-    };
+      
+
+      const[formdata, setFormData] = useState({})
+      const handleInput = (e)=>{
+          const{name, value} = e.target;
+          setFormData({
+              ...formdata,
+              [name]:value,
+          })
+      }
+      console.log('STUDENT NAME',formdata.Stud_name)
+    // const checkValidation = ()=>{
+    //     console.log('STUDENT NAME',formdata.Stud_name)
+    //     const requiredField = ['Stud_name','email','gender','phone','Address_line_1','Address_line_2','qualification','percent_mark', 'username', 'password']
+    //     for(const field of requiredField){
+    //         console.log(field)
+    //         console.log(formdata[field])
+    //         if(!formdata[field]){
+    //             toast.warning(`${field.replace('_','')} is required`, {
+    //                 position: toast.POSITION.TOP_CENTER,
+    //                 theme: 'colored',
+    //             });
+    //             return false;
+    //         }
+    //     }
+    //     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    //     if(!emailRegex.test(formdata.email.toLowerCase())){
+    //         toast.warning("Please enter vaild mail id", {
+    //             position: toast.POSITION.TOP_CENTER,
+    //             theme: 'colored',
+    //         });
+    //         return false;
+    //     }
+    //     return true;
+    // }
     
     const handleInputImage = (e) => {
         const file = e.target.files[0];
         const formDataImage = new FormData();
     
-        formDataImage.append("Stud_name", formData.Stud_name);
-        formDataImage.append("email", formData.email);
-        formDataImage.append("gender", formData.gender);
-        formDataImage.append("phone", formData.phone);
-        formDataImage.append("Address_line_1", formData.Address_line_1);
-        formDataImage.append("Address_line_2", formData.Address_line_2);
-        formDataImage.append("qualification", formData.qualification);
-        formDataImage.append("percent_mark", formData.percent_mark);
-        formDataImage.append("username", formData.username);
-        formDataImage.append("password", formData.password);
+        formDataImage.append("Stud_name", formdata.Stud_name);
+        formDataImage.append("email", formdata.email);
+        formDataImage.append("gender", formdata.gender);
+        formDataImage.append("phone", formdata.phone);
+        formDataImage.append("Address_line_1", formdata.Address_line_1);
+        formDataImage.append("Address_line_2", formdata.Address_line_2);
+        formDataImage.append("qualification", formdata.qualification);
+        formDataImage.append("percent_mark", formdata.percent_mark);
+        formDataImage.append("username", formdata.username);
+        formDataImage.append("password", formdata.password);
         formDataImage.append('reg_date', getDate())
         formDataImage.append("stud_img", file);
     
         setFormData(formDataImage);
-        console.log('entered value is '+ formData)
+        console.log('entered value is '+ formdata)
     };
     const navigate = useNavigate();
+
+    
+
     const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log("Entered Value is", formData);
+
+        // if(!checkValidation()){
+        //     return;
+        // }
+        console.log("Entered Value is", formdata);
     
         try {
-            const response = await axios.post('http://127.0.0.1:8000/create_stud/', formData);
+            const response = await axios.post('http://127.0.0.1:8000/create_stud/', formdata);
     
             if (response.status === 201) {
                 toast.success("Student Enrolled Successfully", {

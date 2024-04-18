@@ -32,13 +32,19 @@ function EnrolledStudents() {
     const [originalData, setOriginalData] = useState({});
     const[formData, setFormData] = useState({})
     const updateDetails = (id)=>{
-        setShowModal(true)
-
+  
         console.log('Employee id', id)
-        fetch(`http://127.0.0.1:8000/stud_details/${id}`)
+        fetch(`http://127.0.0.1:8000/stud_details/${id}/`)
         .then(response=>response.json())
         .then(res=>setUpdate(res))
     }
+
+    
+
+    useEffect(() => {
+        // Fetch initial data
+        updateDetails();
+    }, []);
     const handleInputChange = (event, fieldName)=>{
 
         const value = event.target.value;
@@ -92,7 +98,7 @@ function EnrolledStudents() {
             },
         });
 
-         setShowModal(false)
+       
          
     
         toast.success("Employee Updated Successful", {
@@ -155,11 +161,11 @@ function EnrolledStudents() {
                 <input type='text' className='form-control' placeholder='Search Here' style={{width:200}} value={searchItem}onChange={(e)=>{ setSearchItem(e.target.value);setCurrentPage(1);}}></input>
             </div>
                                
-     <div class="row p-5">
+     <div class="row p-5 animate__animated animate__fadeIn" >
         {
             records.map((items)=>(
                 <div class="col-sm-4 mb-3 mb-sm-0">
-            <div class="card mb-3 " style={{maxWidth: 340, height: 225}}>
+            <div class="card mb-3" style={{maxWidth: 340, height: 225}}>
                 <div class="row g-0">
                   <div class="col-md-6">
                     <img src={items.stud_img} class="img-fluid rounded-start" style={{height: 225}} alt="..." />
@@ -211,7 +217,7 @@ function EnrolledStudents() {
                             </nav>  
 
                             </div> 
-    {showModal && (
+  
 
 <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg" role="document">
@@ -289,12 +295,11 @@ function EnrolledStudents() {
             </div>
         </div>
     </div>   
-    )}    
+       
 
 
     {/* --------------------------------------------------------------Delete Modal ----------------------------------- */}
    
-    {showModal && (
 
             <div class="modal fade" id="myModals" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
                 <div class="modal-dialog" role="document">
@@ -317,7 +322,7 @@ function EnrolledStudents() {
                     </div>
                 </div>
             </div>   
-    )} 
+
    
     </>
   )

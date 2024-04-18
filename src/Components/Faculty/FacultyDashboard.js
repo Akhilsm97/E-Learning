@@ -1,23 +1,26 @@
 import { toast } from 'react-toastify';
-import './css/styles.css';
+import '../Admin/css/styles.css';
 import React, {useState, useEffect} from 'react'
 import axios from 'axios';
-import EnrolledStudents from './EnrolledStudents';
-import Add_Course from './Add_Course';
-import Course_Details from './Course_Details';
-import Course_Mod from './Course_Mod';
-import Module_Details from './Module_Details';
-import { Button, Modal } from 'bootstrap';
-import Upload from './images/upload.png';
+import EnrolledStudents from '../Admin/EnrolledStudents';
+import Add_Course from '../Admin/Add_Course';
+import Course_Details from '../Admin/Course_Details';
+import Course_Mod from '../Admin/Course_Mod';
+import Module_Details from '../Admin/Module_Details';
+import { Modal } from 'bootstrap';
+import Upload from '../Admin/images/upload.png';
 import { Link, useNavigate } from 'react-router-dom';
-import Edit from './images/edit2.png';
-import Uploaded_Questions from './Uploaded_Questions';
-import AddFaculty from './AddFaculty';
-import FacultyDetails from './FacultyDetails';
-import Notify from './Notify';
-import '../hover.css';
+import Edit from '../Admin/images/edit2.png';
+import Uploaded_Questions from '../Admin/Uploaded_Questions';
+import AddFaculty from '../Admin/AddFaculty';
+import FacultyDetails from '../Admin/FacultyDetails';
+import Cross from '../Admin/images/cross.jpg';
+import Edit1 from './images/edit.png'
+import Edit2 from './images/edit2.png';
+import Edit3 from './images/edit3.png';
 
-function Admin() {
+
+function FacultyDashboard({ username, clearAuthenticatedUser }) {
 
     const handleLogout = () => {
         // Perform logout actions
@@ -31,26 +34,93 @@ function Admin() {
         const date = today.getDate().toString().padStart(2, '0');
         return `${year}-${month}-${date}`;
       }
-    const [totalCount, setTotalCount] = useState('');
-    const [totalCounts, setTotalCounts] = useState([]);
-    const [facultyCount, setFacultyCount] = useState('');
+
+    const [userData, setUserData] = useState({});
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                // Update the URL with your Django server's address
-                const response = await axios.get('http://127.0.0.1:8000/counts/');
-                setTotalCount(response.data.student_count);
-                setTotalCounts(response.data.course_count);
-                setFacultyCount(response.data.faculty_count)
-                console.log('Total Count',facultyCount)
-
-            } catch (error) {
-                console.error('Error fetching total count:', error);
+        // Define the first API URL with the username parameter
+        const firstApiUrl = `http://127.0.0.1:8000/faculty_detail/${username}/`;
+      
+        // Make the first API request
+        fetch(firstApiUrl)
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error('Network response was not ok');
             }
-        };
+            return response.json();
+          })
+          .then((data) => {
+            console.log(data); // Add this line for debugging
+            setUserData(data); // Store the first user data object in state
+          })
+          .catch((error) => {
+            console.error('Error fetching data:', error);
+          });
+         
+    },[]);
+    
+    useEffect(() => {
+        console.log('VALID ID IS', userData.id);
+    }, [userData.id]);
 
-        fetchData();
-    }, [totalCount,facultyCount]);
+
+    const [facultyAssign, setFacultyAssign]= useState([])
+const CartItems = async () => {
+  try {
+      const response = await axios.get(`http://127.0.0.1:8000/faculty_assign/${userData.faculty_name}/`);
+      setFacultyAssign(response.data);
+      console.log("RESPONSE DATA", response);
+  } catch (error) {
+      console.error("Error fetching course materials:", error);
+  }
+};
+
+useEffect(() => {
+  CartItems();
+}, [userData.id]);
+
+const [facultyStud, setFacultyStud]= useState([])
+const FacultyStuds = async () => {
+  try {
+      const response = await axios.get(`http://127.0.0.1:8000/faculty_stud/${userData.department}/`);
+      setFacultyStud(response.data);
+      console.log("RESPONSE DATA", response);
+  } catch (error) {
+      console.error("Error fetching course materials:", error);
+  }
+};
+
+
+
+useEffect(() => {
+    FacultyStuds();
+}, [userData.department]);
+
+
+
+
+
+useEffect(() => {
+    FacultyStuds();
+}, [userData.department]);
+
+
+  
+    const [totalCount, setTotalCount] = useState({});
+
+    
+const PurchaseCount = async () => {
+  try {
+      const response = await axios.get(`http://127.0.0.1:8000/Faculty_Stud_count/${userData.department}/`);
+      setTotalCount(response.data);
+      console.log("RESPONSE DATA", response);
+  } catch (error) {
+      console.error("Error fetching course materials:", error);
+  }
+};
+
+useEffect(() => {
+    PurchaseCount();
+}, [userData.id]);
 
     const [data, setData]= useState([])
     useEffect(()=>{
@@ -67,8 +137,8 @@ function Admin() {
         const [searchItem, setSearchItem] = useState('');
         const recordPerPage = 5
 
-        const filterData = data.filter((item) =>
-            item.Stud_name.toLowerCase().includes(searchItem.toLowerCase())
+        const filterData = facultyStud.filter((item) =>
+            item.stud_name.toLowerCase().includes(searchItem.toLowerCase())
         )
 
         
@@ -140,6 +210,7 @@ const handleSubmit = async (e) => {
         const response = await axios.post('http://127.0.0.1:8000/create_stud/', formData);
 
         if (response.status === 201) {
+            setShowModal(false); 
             toast.success("Student Enrolled Successfully", {
                 position: toast.POSITION.TOP_CENTER,
                 theme: 'colored'
@@ -153,18 +224,22 @@ const handleSubmit = async (e) => {
 
 // ------------------------------------------------------------Course Module ----------------------------------------------------------------
 
+
 const [course, setCourse] = useState([]);
+    
+const PerCourse = async () => {
+  try {
+      const response = await axios.get(`http://127.0.0.1:8000/course_per/${userData.department}/`);
+      setCourse(response.data);
+      console.log("RESPONSE DATA", response);
+  } catch (error) {
+      console.error("Error fetching course materials:", error);
+  }
+};
 
 useEffect(() => {
-    axios
-        .get('http://127.0.0.1:8000/course-names/')
-        .then((response) => {
-            setCourse(response.data);
-        })
-        .catch((error) => {
-            console.error("Error fetching course data:", error);
-        });
-}, []); 
+    PerCourse ();
+}, [userData.department]);
 
 const [datas, setDatas]= useState([])
 useEffect(()=>{
@@ -217,22 +292,22 @@ const [courses, setCourses] = useState([]);
 
     
 
-    const handleLinkClick = (id) => {
-        fetch(`http://127.0.0.1:8000/topic_details/${id}/`)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(data => {
-                setCourses(data); // Update courses state with fetched data
-            })
-            .catch(error => {
-                console.error('Error fetching courses:', error);
-                // Optionally, you can handle the error state here
-            });
-    };
+const handleLinkClick = (id) => {
+    fetch(`http://127.0.0.1:8000/topic_details/${id}/`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            setCourses(data); // Update courses state with fetched data
+        })
+        .catch(error => {
+            console.error('Error fetching courses:', error);
+            // Optionally, you can handle the error state here
+        });
+};
 
     // --------------------------------Update Module -----------------------------------------------------
 
@@ -305,9 +380,7 @@ const [courses, setCourses] = useState([]);
                     position: toast.POSITION.TOP_CENTER,
                     theme: 'colored',
                 });
-
                 e.target.reset();
-                handleLinkClick()
             }
         }catch(error){
             console.log(error)
@@ -328,13 +401,8 @@ const [courses, setCourses] = useState([]);
 
     const [ups, setUps] = useState({});
     
-        const navigate = useNavigate()
-        const handleMaterials=(id, enroll_id)=>{
-            navigate(`/materials/${id}/${enroll_id}/`) 
 
-               
-
-        };
+        
 
 
         // fetch(`http://127.0.0.1:8000/course_materials/${ups.course_enrollment_id}/${up.module}/`)
@@ -354,7 +422,14 @@ const [courses, setCourses] = useState([]);
         // });
 
 
-        
+        const navigate = useNavigate()
+
+        const handleMaterials=(id, enroll_id)=>{
+            navigate(`/materials/${id}/${enroll_id}/`) 
+
+               
+
+        };
         const[display, setDisplay] = useState([])
         const fetchData = async () => {
             try {
@@ -424,14 +499,14 @@ const [courses, setCourses] = useState([]);
                     console.log(response.data)
 
                     fetchData();
-                    e.target.reset();
+                    
             
                     if (response.status === 201) {
                         toast.success("Material Added Successfully", {
                             position: toast.POSITION.TOP_CENTER,
                             theme: 'colored'
                         });
-                        
+                        e.target.reset();
                     }
                 } catch (error) {
                     console.log('Error occurred:', error);
@@ -441,7 +516,7 @@ const [courses, setCourses] = useState([]);
             // --------------------------------------------------------------------Update Material -----------------------------------------
             const[materialUpdate, setmaterialUpdate] = useState({})
             const updateMaterial = (id) => {
-                fetch(`http://127.0.0.1:8000/material_details/${id}/` )
+                fetch('http://127.0.0.1:8000/material_details/' + id)
                     .then(response => {
                         if (!response.ok) {
                             throw new Error('Network response was not ok');
@@ -515,6 +590,7 @@ const [courses, setCourses] = useState([]);
             
                     // Handle response
                     console.log("Response:", response.data);
+                    setShowModal(false);
                     toast.success("Material Updated Successfully", {
                         position: toast.POSITION.TOP_CENTER,
                         theme: 'colored',
@@ -546,7 +622,8 @@ const [courses, setCourses] = useState([]);
 
                 formDataPdf.append("course_enrollment_id", ups.course_enrollment_id);
                 formDataPdf.append("module", up.module);
-                formDataPdf.append("video_title",formDatass.video_title);
+                formDataPdf.append("video_title","Code Challenge 1");
+                console.log('ENTERED',formDatass.video_title)
                 formDataPdf.append('Thumbnail', file1)
                 console.log('THUMBNAIL DATA', file1)
                 formDataPdf.append("type", 'PDF');
@@ -605,17 +682,6 @@ const [courses, setCourses] = useState([]);
                 fetchClass();
             }, [classCount]);
 
-            const [dataAsses, setDataAsses]= useState([])
-    useEffect(()=>{
-        axios
-        .get('http://127.0.0.1:8000/assessment/')
-        .then((response)=>{
-            setDataAsses(response.data)
-        })
-        .catch((error)=>{
-            console.log("error")
-        })
-    }, [data])
 
             const [selectedOption, setSelectedOption] = useState();
             const [fetchedData, setFetchedData] = useState([]);
@@ -799,6 +865,18 @@ const [courses, setCourses] = useState([]);
                 }));
               }
 
+              const [dataAsses, setDataAsses]= useState([])
+    useEffect(()=>{
+        axios
+        .get('http://127.0.0.1:8000/assessment/')
+        .then((response)=>{
+            setDataAsses(response.data)
+        })
+        .catch((error)=>{
+            console.log("error")
+        })
+    }, [data])
+
 
             
               const submitQuestion = async (e) => {
@@ -844,7 +922,6 @@ const [courses, setCourses] = useState([]);
                     console.log(response.data)
 
                     fetchData();
-                    uploadQuestions()
                     
             
                     if (response.status === 201) {
@@ -874,16 +951,155 @@ const [courses, setCourses] = useState([]);
                 fetchQuest();
             }, [questionCount]);
 
+            const [mod, setMod] = useState([]);
+            useEffect(() => {
+                axios
+                    .get('http://127.0.0.1:8000/create_topic/')
+                    .then((response) => {
+                        setMod(response.data);
+                    })
+                    .catch((error) => {
+                        console.error("Error fetching course data:", error);
+                    });
+            }, []); 
 
 
+            const [selectedOption2, setSelectedOption2] = useState();
+            const handleDropdownQChanges = (event) => {
+                const data_select2 = event.target.value;
+                setSelectedOption2(data_select2);
+                console.log('Selected Data',data_select2)
+              };
+              const[questionUpdate, setQuestionUpdate] = useState({})
 
-           
+              const updateQuestion = async (id) => {
+                try {
+                    const response = await axios.get(`http://127.0.0.1:8000/Assessment_update/${id}/`);
+                    setQuestionUpdate(response.data);
+                    console.log("RESPONSE DATA", response);
+                } catch (error) {
+                    console.error("Error fetching course materials:", error);
+                }
+            };
 
+            useEffect(() => {
+                fetchDataFromApis(selectedOptions, selectedOption2); // Fetch initial data
+            }, []);
+
+            const [fetched, setFetched] = useState([]);
+            const fetchDataFrom = async (selectedOptions,selectedOption2) => {
+                console.log(selectedOptions)
+                console.log(selectedOption2)
+                try {
+                  const response = await fetch(`http://127.0.0.1:8000/assessment_Q/${selectedOptions}/${selectedOption2}/`);
+                  const data = await response.json();
+                  console.log(data)
+                  setFetched(data);
+                } catch (error) {
+                  console.error('Error fetching data:', error);
+                }
+            }
+            useEffect(() => {
+                if (selectedOptions && selectedOption2) {
+                    fetchDataFrom(selectedOptions,selectedOption2);
+                }
+              }, [selectedOptions,selectedOption2]);
+
+              const handleQuestionUpdate = async (e, id) => {
+                e.preventDefault();
+                console.log('UPDATED ID', id)
+                const requestData = {
+                    ...questionUpdate, // Include only the changed fields
+                    // Always include reg_date
+                };
+            
+                console.log("Updated Data:", requestData);
+            
+                try {
+                    // Send PUT request
+                    const response = await axios.put(`http://127.0.0.1:8000/Assessment_update/${id}/`, requestData, {
+                        headers: {
+                            'Content-Type': 'multipart/form-data' // Set content type to multipart/form-data
+                        },
+                    });
+            
+                    // Handle response
+                    console.log("Response:", response.data);
+                    updateQuestion(id)
+                    fetchDataFromApis(selectedOptions, selectedOption2);
+            
+                  
+            
+                    toast.success("Question Updated Successfully", {
+                        position: toast.POSITION.TOP_CENTER,
+                        theme: 'colored',
+                    });
+            
+                } catch (error) {
+                    console.error('Error updating material:', error);
+                    // Handle error
+                    toast.error("Failed to update material. Please try again later.", {
+                        position: toast.POSITION.TOP_CENTER,
+                        theme: 'colored',
+                    });
+                }
+            };
+
+            const handleDeleteQ = (id) =>{
+
+                console.log("DELETED ID", id)
+                fetch(`http://127.0.0.1:8000/Assessment/${id}/delete/ ` ,
+                {method: 'DELETE'})
+                .then(()=>{
+                    console.log("Deleted")
+                    fetchDataFromApis(selectedOptions, selectedOption2);
     
+                })
+            }
+
+            const handleQuestionChanges = (event, fieldName) => {
+                const value = event.target.value;
+                setQuestionUpdate(prevUpdate => ({
+                  ...prevUpdate,
+                  [fieldName]: value,
+                }));
+              }
+              const[score, setScore] = useState([])
+              const handleScoreDetails  = async(course_enrollment_id, stud_id)=>{
+                console.log('COURSE ID VALE:',course_enrollment_id )
+                console.log('STUDENT ID', stud_id)
+                try {
+                    const response = await axios.get(`http://127.0.0.1:8000/score_details/${course_enrollment_id}/${stud_id}/`);
+                    setScore(response.data);
+                    console.log("RESPONSE DATA", response);
+                } catch (error) {
+                    console.error("Error fetching course materials:", error);
+                }
+              }
+
+
+              const[totalClass, setTotalClass] = useState({})
+              const[totalWatchedClass, setTotalWatchedClass] = useState({})
+        const videoCount = async () => {
+            try {
+                const response = await axios.get(`http://127.0.0.1:8000/totalVideo_count/${facultyAssign.course_enrollment_id}/`);
+                setTotalClass(response.data);
+                console.log("RESPONSE DATA", response);
+            } catch (error) {
+                console.error("Error fetching course materials:", error);
+            }
+        };
+    
+        useEffect(() => {
+            videoCount();
+        }, [ups.course_enrollment_id, up.module]);
+
+
+
+            
   return (
     <>
-    
-     <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
+      <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
             <a class="navbar-brand font-weight-bolder" href="index.html">E-LEARNING</a>
             <button class="btn btn-link btn-sm order-1 order-lg-0" id="sidebarToggle" href="#"><i class="fa fa-bars" aria-hidden="true"></i></button>
          
@@ -918,50 +1134,8 @@ const [courses, setCourses] = useState([]);
                         <div class="sb-nav-link-icon"><i class="fa fa-tachometer" aria-hidden="true"></i></div>
                         Dashboard
                     </a>
-                    <a class="nav-link " id="announcement-tab" data-toggle="tab" href="#announcement" role="tab" aria-controls="announcement"  aria-selected="true">
-                        <div class="sb-nav-link-icon"><i class="fa fa-tachometer" aria-hidden="true"></i></div>
-                        Announcement
-                    </a>
                    
-                    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapsePages" aria-expanded="false" aria-controls="collapsePages">
-                        <div class="sb-nav-link-icon"><i class="fas fa-book-open"></i></div>
-                              <p className='font-weight-bolder'> <i class="fa fa-bookmark-o" aria-hidden="true"></i> &nbsp;Enrollments</p>
-                        <div class="sb-sidenav-collapse-arrow"><i class="fa fa-sort-desc" aria-hidden="true"></i></div>
-                    </a>
-                    <div class="collapse" id="collapsePages" aria-labelledby="headingTwo" data-parent="#sidenavAccordion">
-                        <nav class="sb-sidenav-menu-nested nav">
-                            <a class="nav-link " id="social-tab" data-toggle="tab" href="#social" role="tab" aria-controls="social" aria-selected="false">
-                                <div class="sb-nav-link-icon"><i class="fa fa-user-o" aria-hidden="true"></i></div>
-                                Add Enrollments
-                            </a>
-                            <a class="nav-link" id="enrolled-tab" data-toggle="tab" href="#enrolled" role="tab" aria-controls="enrolled" aria-selected="false">
-                                <div class="sb-nav-link-icon"><i class="fa fa-user-o" aria-hidden="true"></i></div>
-                                Enrolled Students
-                            </a>
-                                          
-                        </nav>
-                    </div>
-
-
-                    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseFaculty" aria-expanded="false" aria-controls="collapseAssess">
-                        <div class="sb-nav-link-icon"><i class="fas fa-book-open"></i></div>
-                        <p className='font-weight-bolder'><i class="fa fa-users" aria-hidden="true"></i> &nbsp; Faculty</p>
-                        <div class="sb-sidenav-collapse-arrow"><i class="fa fa-sort-desc" aria-hidden="true"></i></div>
-                    </a>
-                    <div class="collapse" id="collapseFaculty" aria-labelledby="headingTwo" data-parent="#sidenavAccordion">
-                        <nav class="sb-sidenav-menu-nested nav">
-                            <a class="nav-link"  id="faculty-tab" data-toggle="tab" href="#faculty" role="tab" aria-controls="faculty" aria-selected="false">
-                                <div class="sb-nav-link-icon"><i class="fas fa-chart-area"></i></div>
-                                Faculty Details
-                            </a>
-                             <a class="nav-link"  id="facultyAdd-tab" data-toggle="tab" href="#facultyAdd" role="tab" aria-controls="facultyAdd" aria-selected="false">
-                                <div class="sb-nav-link-icon"><i class="fas fa-chart-area"></i></div>
-                                Add Faculty
-                            </a>
-                             
-                                          
-                        </nav>
-                    </div>
+                   
 
                     
 
@@ -973,34 +1147,23 @@ const [courses, setCourses] = useState([]);
                     </a>
                     <div class="collapse" id="collapsePagess" aria-labelledby="headingTwo" data-parent="#sidenavAccordion">
                         <nav class="sb-sidenav-menu-nested nav">
-                        <a class="nav-link"  id="course_add-tab" data-toggle="tab" href="#course_add" role="tab" aria-controls="course_add" aria-selected="false">
-                                <div class="sb-nav-link-icon"><i class="fas fa-chart-area"></i></div>
-                                Add Courses
-                            </a>
-                            <a class="nav-link"  id="course_det-tab" data-toggle="tab" href="#course_det" role="tab" aria-controls="course_det" aria-selected="false">
-                                <div class="sb-nav-link-icon"><i class="fas fa-chart-area"></i></div>
-                                Course Details
-                            </a>
                             
-                            <a class="nav-link" id="course_mod-tab" data-toggle="tab" href="#course_mod" role="tab" aria-controls="course_mod" aria-selected="false">
-                                <div class="sb-nav-link-icon"><i class="fas fa-table"></i></div>
-                                Add Course Modules
-                            </a>
+                           
+
                             {
-                                datas.map((items)=>(
+                                course.map((items)=>(
                                     <a class="nav-link font-weight-bolder" id="course_mods-tab" data-toggle="tab" href="#course_mods" role="tab" aria-controls="course_mods" aria-selected="false" onClick={()=>handleLinkClick(items.course_enrollment_id)}>
                                         <div class="sb-nav-link-icon"><i class="fa fa-book" aria-hidden="true"></i></div>
                                         {items.course_name}
                                     </a>
                                 ))
                             }
-                            
                                           
                         </nav>
                     </div>
 
-                    
-                    
+
+                   
 
                     <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseAssess" aria-expanded="false" aria-controls="collapseAssess">
                         <div class="sb-nav-link-icon"><i class="fas fa-book-open"></i></div>
@@ -1029,10 +1192,24 @@ const [courses, setCourses] = useState([]);
 
                    
 
-                    
-                         
+                    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseFaculty" aria-expanded="false" aria-controls="collapseAssess">
+                        <div class="sb-nav-link-icon"><i class="fas fa-book-open"></i></div>
+                        <p className='font-weight-bolder'><i class="fa fa-users" aria-hidden="true"></i> &nbsp; Assessment Test</p>
+                        <div class="sb-sidenav-collapse-arrow"><i class="fa fa-sort-desc" aria-hidden="true"></i></div>
+                    </a>
+                    <div class="collapse" id="collapseFaculty" aria-labelledby="headingTwo" data-parent="#sidenavAccordion">
+                        <nav class="sb-sidenav-menu-nested nav">
+                            <a class="nav-link"  id="faculty-tab" data-toggle="tab" href="#faculty" role="tab" aria-controls="faculty" aria-selected="false">
+                                <div class="sb-nav-link-icon"><i class="fas fa-chart-area"></i></div>
+                                Assessment result
+                            </a>
+                              
+                                          
+                        </nav>
+                    </div>
 
-                    
+
+
 
                     
                     
@@ -1051,7 +1228,7 @@ const [courses, setCourses] = useState([]);
             </div>
             <div class="sb-sidenav-footer">
                 <div class="small">Logged in as:</div>
-                Adminzzz
+                {userData.faculty_name} {totalClass.total}
             </div>
         </nav>
     </div>
@@ -1060,32 +1237,22 @@ const [courses, setCourses] = useState([]);
             <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
                 <div class="container" style={{padding: 30}}>
                         
-                            <div class="row  animate__animated animate__fadeInDown animate__delay-1s">
-                                <div class="col-md-4 ">
-                                    <div class="card shadow  bg-white rounded border-primary mb-3 "  style={{ maxWidth: '18rem' }}>
-                                        <div class="card-header" style={{fontWeight: "bold"}}>STUDENTS</div>
+                            <div class="row">
+                                    <div class="col-md-4" >
+                                        <div class="card border-primary mb-3 shadow" style={{ maxWidth: '18rem' }}>
+                                            <div class="card-header" style={{fontWeight: "bold"}}>STUDENTS</div>
                                             <div class="card-body text-primary">
                                                 <h5 class="card-title">Registered Students</h5>
-                                                <p class="card-text text-center"  style={{ fontSize: 50, fontWeight: 'bolder' }}>{totalCount}</p>
+                                                <p class="card-text text-center"  style={{ fontSize: 50, fontWeight: 'bolder' }}>{totalCount.purchase_count}</p>
                                             </div>
                                         </div>
                                     </div>
-                                <div class="col-md-4">
-                                    <div class="card border-primary mb-3 shadow  bg-white rounded" style={{ maxWidth: '18rem' }}>
+                                <div class="col-md-8" >
+                                    <div class="card border-primary mb-3 shadow" style={{ maxWidth: '28rem', height:200 }}>
                                         <div class="card-header" style={{fontWeight: "bold"}}>COURSES</div>
                                         <div class="card-body text-primary">
-                                          <h5 class="card-title">Registered Courses</h5>
-                                          <p class="card-text text-center"  style={{ fontSize: 50, fontWeight: 'bolder' }}>{totalCounts}</p>
-                                        </div>
-                                      </div>
-
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="card border-primary mb-3 shadow  bg-white rounded" style={{ maxWidth: '18rem' }}>
-                                        <div class="card-header" style={{fontWeight: "bold"}}>FACULTY</div>
-                                        <div class="card-body text-primary">
-                                          <h5 class="card-title">Registered Faculty</h5>
-                                          <p class="card-text text-center"  style={{ fontSize: 50, fontWeight: 'bolder' }}>{facultyCount}</p>
+                                          <h5 class="card-title">Department </h5>
+                                          <p class="card-text text-center pt-3"  style={{ fontSize: 23, fontWeight: 'bolder' }}>{facultyAssign.course_name}</p>
                                         </div>
                                       </div>
 
@@ -1093,7 +1260,7 @@ const [courses, setCourses] = useState([]);
                             </div>
                         </div>
 
-                        <div class="container shadow animate__animated animate__fadeInDown animate__delay-1s" style={{padding: 20}}>
+                        <div class="container shadow" style={{padding: 20}}>
                             <div className='row' style={{marginBottom:20, marginLeft:850}}>
                                 <input type='text' className='form-control' placeholder='Search Here' style={{width:200}} value={searchItem}
                                 
@@ -1118,22 +1285,25 @@ const [courses, setCourses] = useState([]);
                                   </tr>
                                 </thead>
                                 <tbody>
-                                    {
-                                        records.map((item)=>(
-                                            <tr>
-                                                <th scope="col">{item.id}</th>
-                                                <th scope="col"><img src={item.stud_img} style={{width:30, borderRadius:'50%'}} />&nbsp;{item.Stud_name}</th>
-                                                <th scope="col">{item.gender}</th>
-                                                <th scope="col">{item.email}</th>
-                                                <th scope="col">{item.phone}</th>
-                                                <th scope='col'>{item.reg_date}</th>
-                                                <th scope="col">{item.qualification}</th>
-                                            
-                                            </tr>
-                                            
+                                {
+                                    records.map((item) => (
+                                        
+                                        data.map((it) => (
+                                            (item.stud_reg === it.id) && (
+                                                <tr key={it.id}>
+                                                    <th scope="col">{it.id}</th>
+                                                    <th scope="col"><img src={it.stud_img} style={{ width: 30, borderRadius: '50%' }} />&nbsp;{it.Stud_name}</th>
+                                                    <th scope="col">{it.gender}</th>
+                                                    <th scope="col">{it.email}</th>
+                                                    <th scope="col">{it.phone}</th>
+                                                    <th scope='col'>{it.reg_date}</th>
+                                                    <th scope="col">{it.qualification}</th>
+                                                </tr>
+                                            )
                                         ))
-                                    }
-                                
+                                    ))
+                                }
+
                                  
                                 </tbody>
                             </table>
@@ -1168,7 +1338,7 @@ const [courses, setCourses] = useState([]);
             </div>
             <div class="tab-pane fade" id="social" role="tabpanel" aria-labelledby="social-tab">
                 <h3 className='text-center font-weight-bolder pt-5'>Enrolled Students</h3>
-                    <div class="container shadow animate__animated animate__zoomIn " style={{padding: 20, marginTop:50}}>
+                    <div class="container shadow" style={{padding: 20, marginTop:50}}>
                             <div className='row' style={{marginBottom:20, marginLeft:850}}>
                                 <div className='col-md-2'>
 
@@ -1177,7 +1347,7 @@ const [courses, setCourses] = useState([]);
 
                                 </div>
                                 <div className='col-md-8'>
-                                <button type="button" class="btn btn-success font-weight-bolder" data-toggle="modal" data-target="#addStudent" >Add Students</button>
+                                <button type="button" class="btn btn-success font-weight-bolder" data-toggle="modal" data-target="#myModal" onClick={() => setShowModal(true)}>Add Students</button>
                                 </div>
                             </div>
                             <table class="table table-hover table-striped">
@@ -1243,25 +1413,13 @@ const [courses, setCourses] = useState([]);
                          </div>
             </div>
 
-            <div class="tab-pane fade" id="enrolled" role="tabpanel" aria-labelledby="enrolled-tab">
-                                    
-                                    <EnrolledStudents />
-            </div>
-            <div class="tab-pane fade" id="course_add" role="tabpanel" aria-labelledby="course_add-tab">
-                                    
-                                   <Add_Course />
-            </div>
-            <div class="tab-pane fade" id="course_det" role="tabpanel" aria-labelledby="course_det-tab">
-                                    
-                                   <Course_Details />
-            </div>
             <div class="tab-pane fade" id="course_mods" role="tabpanel" aria-labelledby="course_mods-tab">
                 
                 <div className='container-fluid mt-5'>
-                        <div className='row animate__animated animate__fadeIn animate__delay-1s'>
+                        <div className='row'>
                             {
                                 courses.map((itemsss)=>(
-                                    <div className='col-md-4 mb-5 rounded-top '>
+                                    <div className='col-md-4 mb-5 rounded-top'>
                                         <div class="card shadow" style={{width:330, borderRadius:30}}>
                                             <div className='card-header' style={{height:220,backgroundColor: '#042224',borderRadius:'30px 30px 0px 0px'}}>
                                                 
@@ -1319,70 +1477,18 @@ const [courses, setCourses] = useState([]);
 
             </div>
 
-             {/* <--------------------------------------------------------------------Course Materials ---------------------------------------------------> */}
-
-             <div class="tab-pane fade" id="course_mat" role="tabpanel" aria-labelledby="course_mat-tab">
-
-<div className='container p-4 mt-3 ' style={{backgroundColor:'#F8F8FF', border:'solid 1px lightgrey'}}>
-    <h2>{ups.course_name}({up.topic_title})</h2>
-</div>
-<div className='container p-3' style={{ border:'solid 1px lightgrey'}}>
-    <div className='row animate__animated animate__fadeInDown animate__delay-1s'>
-        <div className='col-md-4'>
-            <p>Module Contents</p>
-        </div>
-        <div className='col-md-8 ' >
-            <div className='inner' style={{ marginLeft:200}}>
-                <a className='btn btn-success ' href="#" data-toggle="modal" data-target="#myModalmat">+ Create New Video</a>
-                <a className='btn btn-warning ml-2 text-dark' href="#" data-toggle="modal" data-target="#myModalTask"> + Upload PDF/ Task</a>
+            <div class="tab-pane fade" id="enrolled" role="tabpanel" aria-labelledby="enrolled-tab">
+                                    
+                                    <EnrolledStudents />
             </div>
-        </div>
-
-    </div>
-</div>
-<div className='container p-3 animate__animated animate__fadeInDown animate__delay-1s' style={{ border:'solid 1px lightgrey'}}>
-    <table class="table table-striped mt-5">
-        <thead>
-            <tr>
-            <th scope="col">#Module</th>
-            <th scope="col">Title</th>
-            <th scope="col">Thumbnail</th>
-            <th scope="col">Type</th>
-            <th scope="col">Date</th>
-            <th scope="col">Opeartions</th>
-            </tr>
-        </thead>
-        <tbody>
-            
-
-            {
-                display.map((it)=>(
-                    <tr className='font-weight-bold'>
-                        <th scope="row">{it.module}</th>
-                        <td>{it.video_title}</td>
-                        <td> <img src={it.Thumbnail} style={{width:65}} className='img-thumbnail'></img></td>
-                            {it.type ==='Video' ?(
-                                    <td className='btn btn-success' style={{padding:2, marginTop:25, borderRadius:5}}>{it.type}</td>
-                            ):(
-                                <td className='btn btn-info' style={{padding:2, marginTop:25, borderRadius:5}}>{it.type}</td>
-                            )}
-                        
-                        <td>{it.created_at}</td>
-                        <td>
-                            <a className='btn btn-success' href="#" data-toggle="modal" data-target="#myModalEdit" onClick={()=>updateMaterial(it.id)}>Edit</a>&emsp;
-                            <a className='btn btn-danger' href="#" data-toggle="modal" data-target="#myModalDelete">Delete</a></td>
-                        
-
-                        </tr>
-
-                ))
-            }
-            
-        </tbody>
-    </table>
-</div>
-
-</div>
+            <div class="tab-pane fade" id="course_add" role="tabpanel" aria-labelledby="course_add-tab">
+                                    
+                                   <Add_Course />
+            </div>
+            <div class="tab-pane fade" id="course_det" role="tabpanel" aria-labelledby="course_det-tab">
+                                    
+                                   <Course_Details />
+            </div>
 
 {/* --------------------------------------------------------------Course Modules -------------------------------------------------------------*/}
 
@@ -1402,7 +1508,7 @@ const [courses, setCourses] = useState([]);
                 <div className='container-fluid m-4 w-auto' >
                     <div className='container-fluid p-5'>
                     <form id="myForm" onSubmit={handleSubmits}>
-                        <div className='row animate__animated animate__fadeInDown animate__delay-1s'>
+                        <div className='row'>
                             
                             <div className='col-md-6 pb-2'>
                             <label htmlFor="course_enrollment_id" className='font-weight-bolder'>Course Name:</label>
@@ -1484,7 +1590,8 @@ const [courses, setCourses] = useState([]);
                                                 )}
                                             <td>₹{items.price}</td>
                                             <td>
-                                        
+                                                
+                                                
                                                 <button className='btn btn-danger  font-weight-bold ml-1'  >Delete</button>
                                                 </td>
 
@@ -1519,9 +1626,142 @@ const [courses, setCourses] = useState([]);
 
 
             
-            
+            <div class="tab-pane fade" id="course_module" role="tabpanel" aria-labelledby="course_module-tab">
 
-           
+                
+                                    
+                     
+                    <div className='container-fluid mt-5'>
+                        <div className='row'>
+                            {
+                                courses.map((itemsss)=>(
+                                    <div className='col-md-4 mb-5 rounded-top'>
+                                        <div class="card shadow" style={{width:330, borderRadius:30}}>
+                                            <div className='card-header' style={{height:220,backgroundColor: '#042224',borderRadius:'30px 30px 0px 0px'}}>
+                                                
+                                                <p className='text-center ' style={{fontSize:48, fontWeight:700, color:'rgba(51, 143, 51, 0.969)',marginBlock:-20, marginTop:10}}>MODULE</p> <p className='text-center ' style={{fontSize:58, fontWeight:700, color:'rgba(51, 143, 51, 0.969)',}}>0{itemsss.module}</p>
+                                                <p style={{fontSize:20, fontWeight:900, color:'grey',marginTop:20, textTransform:'uppercase'}}>{itemsss.topic_title}</p>                                            
+                                            </div>
+                                            <div class="card-body">
+                                                
+                                                <p class="card-text" style={{overflow: 'hidden',textOverflow: 'ellipsis',whiteSpace: 'nowrap'}}>{itemsss.topic_details}</p>
+                                                <div className='row'>
+                                                    <div className='col-md-5'>
+
+                                                        {classCount.map((items) => (
+                                                            <div>
+                                                            {itemsss.course_enrollment_id === items.course_enrollment_id && itemsss.module === items.module && items.type==='Video' ? (
+                                                                <p style={{ color:'rgba(51, 143, 51, 0.969)', fontWeight: 900, fontSize:22 }}>{items.total_count} classes</p>
+                                                            ) : null}
+                                                        </div>
+                                                        ))}
+
+                                                    </div>
+                                                    <div className='col-md-7'>
+                                                        {classCount.map((items) => (
+                                                            <div>
+                                                            {itemsss.course_enrollment_id === items.course_enrollment_id && itemsss.module === items.module && items.type==='PDF' ? (
+                                                                <p style={{ color:'rgba(51, 143, 51, 0.969)', fontWeight: 900, fontSize:22 }}>{items.total_count} Challenges</p>
+                                                            ) : null}
+                                                        </div>
+                                                        ))}
+
+                                                    </div>
+                                                </div>
+                                                <div className='row'>
+                                                    <div className='col-md-4'>
+                                                        <button className='btn btn-warning text-white' id="course_mat-tab" data-toggle="tab" href="#course_mat" role="tab" aria-controls="course_mat" aria-selected="false" onClick={() => handleMaterials(itemsss.id, itemsss.course_enrollment_id)} >Materials</button>
+                                                    </div>
+                                                    <div className='col-md-4'>
+                                                        <a className='btn btn-success font-weight-bold ml-1 w-100' href="#" data-toggle="modal" data-target="#myModalz" onClick={()=>updateModules(itemsss.id)}>Edit</a>
+                                                    </div>
+                                                    <div className='col-md-4'>
+                                                    <a className='btn btn-danger font-weight-bold ml-1 w-100' href="#" data-toggle="modal" data-target="#myModalzz" onClick={()=>updateModules(itemsss.id)}>Delete</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+
+                                ))
+                            }
+                            
+                            
+                        </div>
+                    </div>
+
+                   
+                    
+                           
+                            
+                                   
+            </div>
+
+            {/* <--------------------------------------------------------------------Course Materials ---------------------------------------------------> */}
+
+            <div class="tab-pane fade" id="course_mat" role="tabpanel" aria-labelledby="course_mat-tab">
+
+                            <div className='container p-4 mt-3 ' style={{backgroundColor:'#F8F8FF', border:'solid 1px lightgrey'}}>
+                                <h2>{ups.course_name}({up.topic_title})</h2>
+                            </div>
+                            <div className='container p-3' style={{ border:'solid 1px lightgrey'}}>
+                                <div className='row'>
+                                    <div className='col-md-4'>
+                                        <p>Module Contents</p>
+                                    </div>
+                                    <div className='col-md-8 ' >
+                                        <div className='inner' style={{ marginLeft:200}}>
+                                            <a className='btn btn-success ' href="#" data-toggle="modal" data-target="#myModalmat">+ Create New Video</a>
+                                            <a className='btn btn-warning ml-2 text-dark' href="#" data-toggle="modal" data-target="#myModalTask"> + Upload PDF/ Task</a>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                            <div className='container p-3' style={{ border:'solid 1px lightgrey'}}>
+                                <table class="table table-striped mt-5">
+                                    <thead>
+                                        <tr>
+                                        <th scope="col">#Module</th>
+                                        <th scope="col">Title</th>
+                                        <th scope="col">Thumbnail</th>
+                                        <th scope="col">Type</th>
+                                        <th scope="col">Date</th>
+                                        <th scope="col">Opeartions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        
+
+                                        {
+                                            display.map((it)=>(
+                                                <tr className='font-weight-bold'>
+                                                    <th scope="row">{it.module}</th>
+                                                    <td>{it.video_title}</td>
+                                                    <td> <img src={it.Thumbnail} style={{width:65}} className='img-thumbnail'></img></td>
+                                                        {it.type ==='Video' ?(
+                                                                <td className='btn btn-success' style={{padding:2, marginTop:25, borderRadius:5}}>{it.type}</td>
+                                                        ):(
+                                                            <td className='btn btn-info' style={{padding:2, marginTop:25, borderRadius:5}}>{it.type}</td>
+                                                        )}
+                                                    
+                                                    <td>{it.created_at}</td>
+                                                    <td>
+                                                        <a className='btn btn-success' href="#" data-toggle="modal" data-target="#myModalEdit" onClick={()=>updateMaterial(it.id)}>Edit</a>&emsp;
+                                                        <a className='btn btn-danger' >Delete</a></td>
+                                                    
+
+                                                    </tr>
+
+                                            ))
+                                        }
+                                        
+                                    </tbody>
+                                </table>
+                            </div>
+
+            </div>
 
             <div class="tab-pane fade" id="assessment" role="tabpanel" aria-labelledby="assessment-tab">
 
@@ -1539,12 +1779,16 @@ const [courses, setCourses] = useState([]);
                                             <label style={{width:'50%',marginLeft:200}} >Select Course</label>
                                             <select className='form-control font-weight-bold' name='course_name' value={selectedOption} onChange={handleDropdownChange} style={{width:'100%'}}>
                                                 <option className='font-weight-bold'>-------Select Course-------</option>
+
                                                 {
-                                                    course.map((items)=>(
-                                                        
-                                                        <option className='font-weight-bold' value={items.course_enrollment_id}>{items.course_name}</option>
+                                                    course.map((item)=>(
+                                                        <option className='font-weight-bold' value={item.course_enrollment_id}>{item.course_name}</option>
                                                     ))
                                                 }
+                                                        
+                                                               
+                                                           
+                                                   
                                                 
                                             </select> 
                                         </div>
@@ -1583,8 +1827,6 @@ const [courses, setCourses] = useState([]);
         </div>
     </div>
 ))} 
-
-
                             </div>
                         </div>
 
@@ -1598,9 +1840,9 @@ const [courses, setCourses] = useState([]);
                             <div className='container p-3' style={{ border:'solid 1px lightgrey'}}>
                                 <div className='row'>
                                     <div className='col-md-4' >
-                                        <p className='font-weight-bold font-italic'>ASSESSMENTS QUESTIONS</p>
+                                        <p className='font-weight-bold font-italic'>ASSESSMENTS OUESTIONS</p>
                                     </div>
-                                    <div className='col-md-8'  >
+                                    <div className='col-md-8 '  >
                                         <div className='inner' style={{  display: 'flex', alignItems: 'center',width:'80%'}}>
 
                                             <label style={{width:'50%',marginLeft:200}} >Select Course</label>
@@ -1623,7 +1865,7 @@ const [courses, setCourses] = useState([]);
                             
 
 
-                        <div class="accordion accordion-flush" id="accordionFlushExample">
+                            <div class="accordion accordion-flush" id="accordionFlushExample">
                         <div className='row'>
                             {fetchedDatas.map((data, index) => (
                                 
@@ -1710,18 +1952,173 @@ const [courses, setCourses] = useState([]);
                     
             </div>
             <div class="tab-pane fade" id="questions" role="tabpanel" aria-labelledby="questions-tab">
-                <Uploaded_Questions />
+                <div className='container p-4 mt-2 ' style={{backgroundColor:'#F8F8FF', border:'solid 1px lightgrey'}}>
+            <h2 className='font-weight-bolder'>Uploaded Questions</h2>
+        </div>
+
+        <div className='container p-3' style={{ border:'solid 1px lightgrey'}}>
+            <div className='row'>
+                <div className='col-md-2' >
+                    <p className='font-weight-bold font-italic'>ASSESSMENTS OUESTIONS</p>
+                </div>
+                <div className='col-md-5'  >
+                    <div className='inner' style={{  display: 'flex', alignItems: 'center',width:'80%'}}>
+
+                        <label style={{width:'100%'}} >Select Course</label>
+                        <select className='form-control font-weight-bold' name='course_name' value={selectedOptions} onChange={handleDropdownQChange} style={{width:'100%',marginLeft:-50}}>
+                            <option className='font-weight-bold'>----Select Course-----</option>
+                            {
+                                course.map((items)=>(
+                                                        
+                                    <option className='font-weight-bold' value={items.course_enrollment_id}>{items.course_name}</option>
+                            ))
+                            }
+                                                
+                        </select> 
+                    </div>
+                </div>
+                <div className='col-md-5'  >
+                    <div className='inner' style={{  display: 'flex', alignItems: 'center',width:'80%'}}>
+
+                        <label style={{width:'100%'}} >Select Course</label>
+                        <select className='form-control font-weight-bold' name='module' value={selectedOption2} onChange={handleDropdownQChanges} style={{marginLeft:-50}} >
+                            <option className='font-weight-bold'>-----Select Module-----</option>
+                            {
+                                mod.map((items)=>(
+                                                        
+                                    <option className='font-weight-bold' value={items.module}>Module {items.module}</option>
+                            ))
+                            }
+                                                
+                        </select> 
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+
+        <div class="accordion accordion-flush" id="accordionFlushExample">
+                        <div className='row'>
+                            {fetched.map((data, index) => (
+                                
+                                    <div className='col-md-6'>
+                                    <div class="accordion-item p-3" key={index}>
+                                        <h2 class="accordion-header">
+                                            
+                                            
+                                           
+
+                                                   
+
+                                                            <p class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target={`#flush-collapse-${index}`} aria-expanded="false" aria-controls={`flush-collapse-${index}`} style={{fontSize:20}}>Question # {data.question_no}</p>
+                                                       
+                                            
+                                        </h2>
+                                        <div id={`flush-collapse-${index}`} class="accordion-collapse collapse" data-bs-parent="#accordionFlushExample">
+                                            <div class="accordion-body  w-80 shadow-sm p-2 mb-5 bg-body-tertiary rounded font-weight-bold" style={{border: 'solid 1px lightgrey'}}>
+                                                <div className='row p-3'>
+                                                    
+                                                   
+                                                        <p>{data.question}</p>
+                                                        <div className='container'>
+                                                            <div className='row'>
+                                                                <div className='col-md-6'>
+                                                                    <p style={{fontSize:14, textAlign:'left'}}>1. {data.option_1}</p>
+                                                                </div>
+                                                                <div className='col-md-6'>
+                                                                    <p style={{fontSize:14}}>2. {data.option_2}</p>
+                                                                </div>
+                                                                <div className='col-md-6'>
+                                                                    <p style={{fontSize:14}}>3. {data.option_3}</p>
+                                                                </div>
+                                                                <div className='col-md-6'>
+                                                                    <p style={{fontSize:14}}>4. {data.option_4}</p>
+                                                                </div>
+                                                                <Link to="#" style={{marginLeft:180}} data-toggle="modal" data-target="#myModalQuestion" onClick={()=>updateQuestion(data.id)}><img src={Edit} style={{width:20}}></img></Link>
+                                                                <Link to="#" className='ml-3' data-toggle="modal" data-target="#myModalQuestionDelete" onClick={()=>updateQuestion(data.id)}><img src={Cross} style={{width:20}}></img></Link>
+                                                            </div>
+                                                        </div>
+                                                        
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    </div>
+                                
+                            ))}
+                            </div>
+                        </div>
             </div>
 
             <div class="tab-pane fade" id="faculty" role="tabpanel" aria-labelledby="faculty-tab">
-                <FacultyDetails />
+                <div className='container p-4 mt-3 ' style={{backgroundColor:'#F8F8FF', border:'solid 1px lightgrey'}}>
+                    <h2 className='font-weight-bolder'>Assessment Taken Details...</h2>
+                </div>
+                <div className="container" style={{marginTop: 20,marginLeft:40 }}>
+                <h3 style={{padding:20}}><b>ASSESSMENT STAT</b></h3>
+                <div className="row shadow " style={{padding:20,width:1100, backgroundColor: 'white'}}>
+                    <div className='search' style={{padding:20, marginLeft:30}}>
+                        <div className='row'>
+                            <div className='col-md-6'>
+
+                            </div>
+                            <div className='col-md-6'style={{width:'30%'}}>
+                                <input type='text' className='form-control' placeholder='Search Here'  />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table className='table  table-hover  '  style={{fontFamily: 'century',}}>
+                            <thead style={{fontSize:12}}>
+                                <tr>
+                                <th style={{fontSize:18, fontWeight: 'bold', padding: 20}}>ID</th>
+                                <th style={{fontSize:18, fontWeight: 'bold',padding: 20}}>Student Name</th>
+                                <th style={{fontSize:18, fontWeight: 'bold',padding: 20}}>Contact No</th>
+                                <th style={{fontSize:18, fontWeight: 'bold',padding: 20}}>Mail Id</th>
+                                <th style={{fontSize:18, fontWeight: 'bold',padding: 20}}>Test result</th>
+                                
+                                {/* Add more table headers here */}
+                                </tr>
+                            </thead>
+                            <tbody>
+                            {
+                                    records.map((item) => (
+                                        
+                                        data.map((it) => (
+                                            (item.stud_reg === it.id) && (
+                                    
+                                <tr key={item.id}>
+                                    <td>{it.id}</td>
+                                    <td style={{textAlign:'left', paddingLeft: 20}}>
+                                    <img src={it.stud_img} class="img-rounded" alt={item.stud_name} style={{width:50, height:50, borderRadius:50}}/>&emsp;
+                                        {it.Stud_name} &nbsp;{item.last_name}
+                                    </td>
+                                    <td>{it.phone}</td>
+                                    <td>{it.email}</td>
+                                        
+                                    {/* Add more table cells here */}
+                                    <td>
+                                    <Link to="#" className='text-center' data-toggle="modal" data-target="#myModalTest" onClick={()=>handleScoreDetails(facultyAssign.course_enrollment_id,it.id)} ><img src={Edit1} alt='dgfhdg' style={{width:25, height:25,}} /></Link>&emsp;
+                                    </td>
+                                    
+                                </tr>
+                                     )
+                                     ))
+                                 ))
+                             }
+                            
+                            </tbody>
+                        </table>
+
+                    </div>        
+                        
+                </div>
+            </div>
+
             </div>
             <div class="tab-pane fade" id="facultyAdd" role="tabpanel" aria-labelledby="facultyAdd-tab">
                 <AddFaculty />
-            </div>
-
-            <div class="tab-pane fade show " id="announcement" role="tabpanel" aria-labelledby="announcement-tab">
-                <Notify />
             </div>
             
             
@@ -1731,389 +2128,7 @@ const [courses, setCourses] = useState([]);
     </div>
 </div>
 
-   
-   
-
-
-        
-
-    
-
-            {/* Student Modal */}
-          
-
-
-
-
-
-        
-
-<div class="modal fade" id="addStudent" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Modal Title</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-
-                    <div className='container-fluid'>
-                      <form id="myForm" onSubmit={handleSubmit}>
-                        <div className='row'>
-                            <div className='col-md-6 pb-2'>
-                                <label className='font-weight-bolder'>Student Name</label>
-                                <input type='text' className='form-control' name='Stud_name' onChange={handleInput} />
-                            </div>
-                            <div className='col-md-6 pb-2'>
-                                <label className='font-weight-bolder'>Student Mail Id</label>
-                                <input type='mail' className='form-control' name="email" onChange={handleInput}/>
-                            </div>
-                            <div className='col-md-6 pb-2'>
-                                <label className='font-weight-bolder'>Gender</label>
-                                <select className='form-control font-weight-bolder' name="gender" onChange={handleInput}>
-                                    <option value=''>----- Select Gender ------</option>
-                                    <option value='Male'>Male</option>
-                                    <option value='Female'>Female</option>
-                                </select>
-                            </div>
-                            <div className='col-md-6 pb-2'>
-                                <label className='font-weight-bolder'>Student Contact No</label>
-                                <input type='text' className='form-control' name="phone" onChange={handleInput}/>
-                            </div>
-                            <div className='col-md-6 pb-2'>
-                                <label className='font-weight-bolder'>AddressLine 1</label>
-                                <textarea className='form-control'  name="Address_line_1" onChange={handleInput} ></textarea>
-                            </div>
-                            <div className='col-md-6 pb-2'>
-                                <label className='font-weight-bolder'>AddressLine 2</label>
-                                <textarea className='form-control' name="Address_line_2" onChange={handleInput} ></textarea>
-                            </div>
-                            <div className='col-md-6 pb-2'>
-                                <label className='font-weight-bolder'>Qualification</label>
-                                <input type='text' className='form-control' name="qualification" onChange={handleInput} />
-                            </div>
-                            <div className='col-md-6 pb-2'>
-                                <label className='font-weight-bolder'>Percentage</label>
-                                <input type='number' className='form-control' name="percent_mark" onChange={handleInput}/>
-                            </div>
-                            <div className='col-md-6 pb-2'>
-                                <label className='font-weight-bolder'>Username</label>
-                                <input type='text' className='form-control' name="username"  onChange={handleInput}/>
-                            </div>
-                            <div className='col-md-6 pb-2'>
-                                <label className='font-weight-bolder'>Password</label>
-                                <input type='password' className='form-control' name="password" onChange={handleInput}/>
-                            </div>
-                            <div className='col-md-6 pb-2'>
-                                <label className='font-weight-bolder'>Student Image</label>
-                                <input type='file' className='form-control' name="stud_img" accept='image/*' onChange={handleInputImage}/>
-                            </div>
-                        </div>
-                        <button type='submit' className='btn btn-success mt-3'  style={{marginBottom: 20, marginLeft: 300}}>Enroll Student</button>
-                        </form>
-                    </div>
-
-
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                </div>
-            </div>
-        </div>
-    </div>   
-
-
-
-    
-            <div  className="modal fade" id="myModalq" tabIndex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                <div className="modal-dialog modal-lg" style={{ width: 750 }}>
-                    <div class="modal-content">
-                    <div class="modal-header">
-                        <h1 class="modal-title fs-5" id="exampleModalLabel">Module Update</h1>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                    </div>
-                    <div class="modal-body">
-                      
-                        <div className='container'>
-                        
-                        <form onSubmit={(e) => updateMod(e, up.id)}>
-                            <div className='row'>
-                                <div className='col-md-6' style={{  display: 'flex', alignItems: 'center' }}>
-                                    <label className='mr-2'>Course Name:</label>
-                                    <input type='text' className='form-control' name='course_enrollment_id' value={up.course_enrollment_id} onChange={(event)=>handleInputModule(event, 'course_enrollment_id')} readOnly />
-                                </div>
-                                <div className='col-md-6' style={{  display: 'flex', alignItems: 'center' }}>
-                                    <label className='mr-2'>Module:</label>
-                                    <select name='module' className='form-control' value={up.module} onChange={(event)=>handleInputModule(event, 'module')}>
-                                        <option className='font-weight-bold' value="1">Module 1</option>
-                                        <option className='font-weight-bold' value="2">Module 2</option>
-                                        <option className='font-weight-bold' value="3">Module 3</option>
-                                        <option className='font-weight-bold' value="4">Module 4</option>
-                                        <option className='font-weight-bold' value="5">Module 5</option>
-                                        <option className='font-weight-bold' value="6">Module 6</option>
-                                        <option className='font-weight-bold' value="7">Module 7</option>
-                                        <option className='font-weight-bold' value="8">Module 8</option>
-                                        <option className='font-weight-bold' value="9">Module 9</option>
-                                        <option className='font-weight-bold' value="10">Module 10</option>
-
-                                    </select>
-                                </div>
-                                <div className='col-md-6' style={{  display: 'flex', alignItems: 'center' }}>
-                                    <label className='mr-2'>Topic Title:</label>
-                                    <input type='text' className='form-control' name='topic_title' value={up.topic_title} onChange={(event)=>handleInputModule(event, 'topic_title')} />
-                                </div>
-                                <div className='col-md-6' style={{  display: 'flex', alignItems: 'center' }}>
-                                    <label className='mr-2'>Topic Details:</label>
-                                    <input type='text' className='form-control' name='topic_details' value={up.topic_details} onChange={(event)=>handleInputModule(event, 'topic_details')} />
-                                </div>
-                            </div>
-                            <button type="submit" className='btn btn-primary ' style={{margin:'20px 20px 20px 270px'}}>Update Module</button>
-                            </form>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal" >Close</button>
-                        
-                    </div>
-                    </div>
-                </div>
-            </div>  
-       
-    
-
-
-
-
-{/* -------------------------------------------------------------------------Delete Module  Modals ----------------------------------------- */}
-
-
-    
-    <div  className="modal fade" id="myModalzz" tabIndex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-        <div className="modal-dialog " >
-            <div class="modal-content">
-            <div class="modal-header">
-                <h4 class="modal-title " id="exampleModalLabel">Module Update</h4>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-            </div>
-            <div class="modal-body">
-              
-            <p className='font-weight-bolder'> Are you want to delete {up.topic_title} </p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-danger" >Delete</button>
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                
-            </div>
-            </div>
-        </div>
-    </div>  
-
-
-
-
-{/* --------------------------------------------------------------Module Material ------------------------------------- */}
-{showModal && (
-    
-    <div  className="modal fade" id="myModalmat" tabIndex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-        <div className="modal-dialog modal-lg" >
-            <div class="modal-content">
-            <div class="modal-header">
-                <h4 class="modal-title font-weight-bolder font-italic " id="exampleModalLabel">Material Upload</h4>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-            </div>
-            <div class="modal-body">
-                <div className='container-fluid'>
-                 <form onSubmit={handleMaterialSubmit}> 
-                        <div className='row'>
-                            <div className='col-md-6' style={{  display: 'flex', alignItems: 'center' }}>
-                                <label className='font-weight-bold'>Course Id:</label>
-                                <input type='text' className='form-control' name='course_enrollment_id' value={ups.course_enrollment_id}  onChange={handleMaterialss} readOnly></input>
-                            </div>
-                            <div className='col-md-6' style={{  display: 'flex', alignItems: 'center' }}>
-                                <label className='font-weight-bold' >Module:</label>
-                                <input type='text' name='module' value={up.module} className='form-control ml-1' onChange={handleMaterialss} readOnly></input>
-                            </div>
-                            <div className='col-md-6 mt-2' style={{  display: 'flex', alignItems: 'center' }}>
-                                <label className='font-weight-bold' >Video Title:</label>
-                                <input type='text' name='video_title' className='form-control ml-1 text-center' placeholder='Video Title' onChange={handleMaterialss}></input>
-                            </div>
-                            <div className='col-md-6 mt-2' style={{  display: 'flex', alignItems: 'center' }}>
-                                <label className='font-weight-bold' >Video Url:</label>
-                                <input type='text' name='video_url' className='form-control ml-1 text-center' placeholder='Enter Video Url' onChange={handleMaterialss}></input>
-                            </div>
-                            <div className='col-md-6 mt-2' >
-                            <div className="container con">
-                                {imageSrc && (
-                                    <img
-                                    id="file-ip-1-preview"
-                                    src={imageSrc}
-                                    style={{ width: 150, height: 220 }}
-                                    />
-                                )}
-                                <label htmlFor="file-ip-1" className="up_label">
-                                    <img src={Upload} className="up_img" style={{ width: 30 }} />
-                                    Upload Image
-                                </label>
-                                <input
-                                    type="file"
-                                    id="file-ip-1"
-                                    name="Thumbnail"
-                                    accept="image/*"
-                                    onChange={(event) => showPreview(event)}
-                                    hidden
-                                />
-                                </div>
-                            </div>
-                            <div className='col-md-6 mt-2' style={{  display: 'flex', alignItems: 'center' }}>
-                            
-                            </div>
-                        </div>
-
-                        <button type='submit' className='btn btn-success' style={{marginLeft:300, marginTop:20}}>Upload Details</button>
-                    </form>    
-                </div>
-              
-            <p className='font-weight-bolder'></p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary"  data-dismiss="modal" aria-label="Close">Close</button>
-            </div>
-            </div>
-        </div>
-    </div>  
-)} 
-
-        <div  className="modal fade" id="myModalEdit" tabIndex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                <div className="modal-dialog modal-lg" style={{ width: '700px' }}>
-                    <div class="modal-content">
-                    <div class="modal-header">
-                        <h4 class="modal-title " id="exampleModalLabel">Material Update</h4>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                    </div>
-                    <div class="modal-body">
-                        <div className='container-fluid'>
-                            <form onSubmit={(e)=>handleMaterialSubmits(e, materialUpdate.id )}  > 
-                                <div className='row'>
-                                    <div className='col-md-6' style={{  display: 'flex', alignItems: 'center' }}>
-                                        <label className='font-weight-bold'>Course Id:</label>
-                                        <input type='text' className='form-control' name='course_enrollment_id' value={materialUpdate.course_enrollment_id} onChange={(event)=>handleMaterialUpdate(event, 'course_enrollment_id')} ></input>
-                                    </div>
-                                    <div className='col-md-6' style={{  display: 'flex', alignItems: 'center' }}>
-                                        <label className='font-weight-bold'>Module:</label>
-                                        <input type='text' className='form-control' name='module' value={materialUpdate.module} onChange={(event)=>handleMaterialUpdate(event, 'module')}></input>
-                                    </div>
-                                    <div className='col-md-6' style={{  display: 'flex', alignItems: 'center' }}>
-                                        <label className='font-weight-bold'>Video Title:</label>
-                                        <input type='text' className='form-control' name='video_title' value={materialUpdate.video_title} onChange={(event)=>handleMaterialUpdate(event, 'video_title')}></input>
-                                    </div>
-                                    <div className='col-md-6' style={{  display: 'flex', alignItems: 'center' }}>
-                                        <label className='font-weight-bold'>Video URL:</label>
-                                        <input type='text' className='form-control' name='video_url' value={materialUpdate.video_url} onChange={(event)=>handleMaterialUpdate(event, 'video_url')}></input>
-                                    </div>
-                                    <div className='col-md-6' style={{  display: 'flex', alignItems: 'center' }}>
-                                        <label className='font-weight-bold'>Video Thumbnail:</label>
-                                        <img src={materialUpdate.Thumbnail} style={{width:50}} className='img-thumbnail'></img>
-                                        <input type='file' className='form-control' name='Thumbnail' onChange={handleThumbnail} ></input>
-                                    </div>
-                                </div>    
-                                <button type='submit' className='btn btn-primary' style={{margin:'20px 0px 0px 220px'}}>Update Materials</button>
-                            </form>   
-                        </div>     
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal" aria-label="Close">Close</button>
-                        
-                    </div>
-                    </div>
-                </div>
-            </div>
-            <div  className="modal fade" id="myModalDelete" tabIndex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                <div className="modal-dialog modal-lg" style={{ width: '700px' }}>
-                    <div class="modal-content">
-                    <div class="modal-header">
-                        <h4 class="modal-title " id="exampleModalLabel">Material Delete</h4>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                    </div>
-                    <div class="modal-body">
-                        <div className='container-fluid'>
-                              
-                        </div>     
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal" aria-label="Close">Close</button>
-                        
-                    </div>
-                    </div>
-                </div>
-            </div>  
-
-
-            <div  className="modal fade" id="myModalTask" tabIndex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                <div className="modal-dialog modal-lg " style={{ width: '600px' }}>
-                    <div class="modal-content">
-                    <div class="modal-header">
-                        <h4 class="modal-title font-weight-bolder font-italic" id="exampleModalLabel">Challenge Upload</h4>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                    </div>
-                    <form onSubmit={handleMaterialPdf}>
-                    <div class="modal-body">
-
-                        <div className='container-fluid'>
-                            <div className='row'>
-                                    <div className='col-md-6' style={{  display: 'flex', alignItems: 'center' }}>
-                                        <label className='font-weight-bold'>Course Id:</label>
-                                        <input type='text' className='form-control' name='course_enrollment_id' value={ups.course_enrollment_id} readOnly onChange={handleMaterialss} ></input>
-                                    </div>
-                                    <div className='col-md-6' style={{  display: 'flex', alignItems: 'center' }}>
-                                        <label className='font-weight-bold'>Module:</label>
-                                        <input type='text' className='form-control' name='module' value={up.module} readOnly  onChange={handleMaterialss}></input>
-                                    </div>
-                                    
-                                        <label className='font-weight-bold pt-2'>Document Title:</label>
-                                        <input type='text' className='form-control' name='video_title' onChange={handleMaterialss}></input>
-
-                                        <label className='font-weight-bold pt-2'>Thumbnail:</label>
-                                        <input type='file' className='form-control' name='Thumbnail' id='fileInput1' onChange={showPdf}></input>
-
-
-                                        
-                                        <label className='font-weight-bold'>Select a file...</label>
-                                        <input type='file' className='form-control' name='pdf' id="fileInput2" style={{border: 'solid 0px black'}} onChange={showPdf}></input>
-
-                                    
-                            </div>
-                        </div>
-                    
-                    
-                    </div>
-                    <div class="modal-footer">
-                        <button type="submit" class="btn btn-success">Save</button>
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                        
-                    </div>
-                    </form>
-                    </div>
-                </div>
-            </div>  
-
-
-          {/* ---------------------------------------------------------ASSESSMENT -----------------------------------------------------------   */}
-
-          <div  className="modal fade" id="myModalAssess" tabIndex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<div  className="modal fade" id="myModalAssess" tabIndex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div className="modal-dialog modal-lg" style={{width:680}} >
             <div class="modal-content">
             <div class="modal-header">
@@ -2172,9 +2187,7 @@ const [courses, setCourses] = useState([]);
             </form>
             </div>
         </div>
-    </div>  
-
-{/* ---------------------------------------------------------------------UPLOAD QUESTIONS --------------------------------------------------- */}
+    </div>
 
     <div  className="modal fade" id="myModalQ" tabIndex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div className="modal-dialog modal-lg" style={{width:700}} >
@@ -2262,9 +2275,227 @@ const [courses, setCourses] = useState([]);
         </div>
     </div>
 
-          
+    <div  className="modal fade" id="myModalQuestion" tabIndex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                            <div className="modal-dialog modal-lg" style={{width:750}}>
+                                <div class="modal-content">
+                                <div class="modal-header">
+                                    <h4 class="modal-title " id="exampleModalLabel">Update Question</h4>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                </div>
+                                <form onSubmit={(e)=>handleQuestionUpdate(e,questionUpdate.id)}>
+                                <div class="modal-body font-weight-bold">
+                                
+                                    <div className='container'>
+                                        <div className='row'>
+                                            <div className='col-md-6' style={{  display: 'flex', alignItems: 'center' }}>
+                                            
+                                                    <label>Course Id:</label>
+                                                    <input type='text' className='form-control' name="course_enrollment_id" value={questionUpdate.course_enrollment_id} onChange={(event)=>handleQuestionChange(event, 'course_enrollment_id')} ></input>
+                                            </div>
+                                            <div className='col-md-6' style={{  display: 'flex', alignItems: 'center' }}>
+                                            
+                                                    <label>Module:</label>
+                                                    <input type='text' className='form-control' name="module" value={questionUpdate.module} onChange={(event)=>handleQuestionChanges(event, 'module')} ></input>
+                                            </div>
+                                            <div className='col-md-12' style={{  display: 'flex', alignItems: 'center' }}>
+                                            
+                                                    <label>Question:</label>
+                                                    <textarea type='text' className='form-control' name="question" onChange={(event)=>handleQuestionChanges(event, 'question')} value={questionUpdate.question}></textarea>
+                                            </div>
+                                            <div className='col-md-6' style={{  display: 'flex', alignItems: 'center' }}>
+                                            
+                                                    <label>Option 1:</label>
+                                                    <input type='text' className='form-control' name="option_1" value={questionUpdate.option_1} onChange={(event)=>handleQuestionChanges(event, 'option_1')} ></input>
+                                            </div>
+                                            <div className='col-md-6' style={{  display: 'flex', alignItems: 'center' }}>
+                                            
+                                                    <label>Option 2:</label>
+                                                    <input type='text' className='form-control' name="option_2" value={questionUpdate.option_2}op onChange={(event)=>handleQuestionChanges(event, 'option_2')}></input>
+                                            </div>
+                                            <div className='col-md-6' style={{  display: 'flex', alignItems: 'center' }}>
+                                            
+                                                    <label>Option 3:</label>
+                                                    <input type='text' className='form-control' name="option_3" value={questionUpdate.option_3} onChange={(event)=>handleQuestionChanges(event, 'option_3')} ></input>
+                                            </div>
+                                            <div className='col-md-6' style={{  display: 'flex', alignItems: 'center' }}>
+                                            
+                                                    <label>Option 4:</label>
+                                                    <input type='text' className='form-control'  name="option_4" value={questionUpdate.option_4} onChange={(event)=>handleQuestionChanges(event, 'option_4')}></input>
+                                            </div>
+                                            <div className='col-md-12' style={{  display: 'flex', alignItems: 'center' }}>
+                                            
+                                                    <label>Correct Answer:</label>
+                                                    <input type='text' className='form-control' name="correct_answer" value={questionUpdate.correct_answer} onChange={(event)=>handleQuestionChanges(event, 'correct_answer')}></input>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="submit" class="btn btn-primary" >Update Question</button>
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                    
+                                </div>
+                                </form>
+                                </div>
+                            </div>
+                        </div>
+
+
+
+                        <div  className="modal fade" id="myModalTest" tabIndex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                            <div className="modal-dialog modal-dialog-centered modal-lg" style={{width:550}}>
+                                <div class="modal-content">
+                                <div class="modal-header">
+                                    <h4 class="modal-title " id="exampleModalLabel">Assessment Result</h4>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                </div>
+                                <form onSubmit={(e)=>handleQuestionUpdate(e,questionUpdate.id)}>
+                                <div class="modal-body font-weight-bold">
+                                
+                                    <div className='container'>
+                                        <div className='row'>
+                                            {
+                                                score.map((items)=>(
+                                                    <>
+                                                    <div className='col-xl-12'>
+                                                        <p>Course&emsp;&emsp;&emsp;&emsp;&nbsp;: &emsp;&emsp;&emsp;{facultyAssign.course_name}</p>        
+                                                    </div>
+                                                    <div className='col-xl-12'>
+                                                        <p>Module&emsp;&emsp;&emsp;&emsp;: &emsp;&emsp;&emsp; {items.module}</p>
+                                                    </div>
+                                                    <div className='col-xl-12'>
+                                                        <p>Correct&emsp;&emsp; &emsp;&emsp;: &emsp;&emsp; &emsp;{items.correct_answer}</p>
+                                                    </div>
+                                                    <div className='col-xl-12'>
+                                                        <p>Wrong&emsp;&emsp;&emsp;&emsp;&nbsp;&nbsp;:&emsp; &emsp;&emsp; {items.wrong_answer}</p>
+                                                    </div>
+                                                    <div className='col-xl-12'>
+                                                        <p>Not attend&emsp;&emsp;&nbsp;&nbsp;: &emsp;&emsp;&emsp; {items.unattend}</p>
+                                                    </div>
+                                                    <div className='col-xl-6'>
+                                                        <p>Final Score&emsp;&emsp;&nbsp;&nbsp;: &emsp;&emsp;&emsp; {items.final_score}</p>
+                                                    </div>
+                                                    <div className='col-xl-6'>
+                                                        {
+                                                            items.percent >= 50 ?(
+                                                                <h6 className='font-weight-bolder' style={{display: 'flex'}}>Result&nbsp;: &emsp;<p className='font-weight-bolder' style={{color:'green'}}>Pass</p></h6>
+                                                            ):(
+                                                                <h6 className='font-weight-bolder'>Result&nbsp;: &emsp;<p className='font-weight-bolder' style={{color:'red'}}>Failed</p></h6>
+                                                            )
+                                                        }
+                                                    </div>
+                                                    </>
+                                                ))
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                    
+                                </div>
+                                </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* <div  className="modal fade" id="myModalq" tabIndex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div className="modal-dialog modal-lg" style={{ width: 750 }}>
+                    <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="exampleModalLabel">Module Update</h1>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                    </div>
+                    <div class="modal-body">
+                      
+                        <div className='container'>
+                        
+                        <form onSubmit={(e) => updateMod(e, up.id)}>
+                            <div className='row'>
+                                <div className='col-md-6' style={{  display: 'flex', alignItems: 'center' }}>
+                                    <label className='mr-2'>Course Name:</label>
+                                    <input type='text' className='form-control' name='course_enrollment_id' value={up.course_enrollment_id} onChange={(event)=>handleInputModule(event, 'course_enrollment_id')} readOnly />
+                                </div>
+                                <div className='col-md-6' style={{  display: 'flex', alignItems: 'center' }}>
+                                    <label className='mr-2'>Module:</label>
+                                    <select name='module' className='form-control' value={up.module} onChange={(event)=>handleInputModule(event, 'module')}>
+                                        <option className='font-weight-bold' value="1">Module 1</option>
+                                        <option className='font-weight-bold' value="2">Module 2</option>
+                                        <option className='font-weight-bold' value="3">Module 3</option>
+                                        <option className='font-weight-bold' value="4">Module 4</option>
+                                        <option className='font-weight-bold' value="5">Module 5</option>
+                                        <option className='font-weight-bold' value="6">Module 6</option>
+                                        <option className='font-weight-bold' value="7">Module 7</option>
+                                        <option className='font-weight-bold' value="8">Module 8</option>
+                                        <option className='font-weight-bold' value="9">Module 9</option>
+                                        <option className='font-weight-bold' value="10">Module 10</option>
+
+                                    </select>
+                                </div>
+                                <div className='col-md-6' style={{  display: 'flex', alignItems: 'center' }}>
+                                    <label className='mr-2'>Topic Title:</label>
+                                    <input type='text' className='form-control' name='topic_title' value={up.topic_title} onChange={(event)=>handleInputModule(event, 'topic_title')} />
+                                </div>
+                                <div className='col-md-6' style={{  display: 'flex', alignItems: 'center' }}>
+                                    <label className='mr-2'>Topic Details:</label>
+                                    <input type='text' className='form-control' name='topic_details' value={up.topic_details} onChange={(event)=>handleInputModule(event, 'topic_details')} />
+                                </div>
+                            </div>
+                            <button type="submit" className='btn btn-primary ' style={{margin:'20px 20px 20px 270px'}}>Update Module</button>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal" >Close</button>
+                        
+                    </div>
+                    </div>
+                </div>
+            </div>  
+       
+    
+
+
+
+
+{/* -------------------------------------------------------------------------Delete Module  Modals ----------------------------------------- */}
+
+
+    
+    <div  className="modal fade" id="myModalzz" tabIndex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div className="modal-dialog " >
+            <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title " id="exampleModalLabel">Module Update</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+            </div>
+            <div class="modal-body">
+              
+            <p className='font-weight-bolder'> Are you want to delete {up.topic_title} </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" >Delete</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                
+            </div>
+            </div>
+        </div>
+    </div>   */}
+
+
+
+  
+        
     </>
   )
 }
 
-export default Admin
+export default FacultyDashboard

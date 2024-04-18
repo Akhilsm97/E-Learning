@@ -32,10 +32,9 @@ function FacultyDetails() {
     const [originalData, setOriginalData] = useState({});
     const[formData, setFormData] = useState({})
     const updateDetails = (id)=>{
-        setShowModal(true)
 
         console.log('Employee id', id)
-        fetch(`http://127.0.0.1:8000/faculty_details/${id}`)
+        fetch(`http://127.0.0.1:8000/faculty_details/${id}/`)
         .then(response=>response.json())
         .then(res=>setUpdate(res))
     }
@@ -138,7 +137,6 @@ function FacultyDetails() {
         // ---------------------------------------------------------Delete -----------------------------------------
 
         const handleDelete=((id) =>{
-            setShowModal(false)
             fetch(`http://127.0.0.1:8000/faculty/${id}/delete/ ` ,
                 {method: 'DELETE'})
                 .then(()=>{
@@ -174,8 +172,8 @@ function FacultyDetails() {
                       <p class="card-text mt-3" style={{fontSize:13,overflow: 'hidden',textOverflow: 'ellipsis',whiteSpace: 'nowrap'}}><b>{items.email}</b></p>
                       <p class="card-text mt-3" style={{overflow: 'hidden',textOverflow: 'ellipsis',whiteSpace: 'nowrap'}}><b>{items.qualification}</b></p>
                       <p class="card-text mt-3" style={{overflow: 'hidden',textOverflow: 'ellipsis',whiteSpace: 'nowrap'}}><b>{items.phone}</b></p>
-                      <p class="card-text" style={{marginLeft: 40}}><a href="#" data-toggle="modal" data-target="#myModal" onClick={()=>{updateDetails(items.id)}}><img src={Edit} style={{borderRadius: '50%', width: 20}} /></a>&emsp;
-                    <a href="#" data-toggle="modal" data-target="#myModals" onClick={()=>{updateDetails(items.id)}} ><img src={Cross} style={{borderRadius: '50%', width: 20}} /></a>
+                      <p class="card-text" style={{marginLeft: 40}}><a href="#" data-toggle="modal" data-target="#myModalEdit" onClick={()=>{updateDetails(items.id)}}><img src={Edit} style={{borderRadius: '50%', width: 20}} /></a>&emsp;
+                    <a href="#" data-toggle="modal" data-target="#myModalDelete" onClick={()=>{updateDetails(items.id)}} ><img src={Cross} style={{borderRadius: '50%', width: 20}} /></a>
                     </p>
                     </div>
                   </div>
@@ -215,9 +213,9 @@ function FacultyDetails() {
                             </nav>  
 
                             </div> 
-    {showModal && (
+    
 
-<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<div class="modal fade" id="myModalEdit" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -293,14 +291,14 @@ function FacultyDetails() {
             </div>
         </div>
     </div>   
-    )}    
+    
 
 
     {/* --------------------------------------------------------------Delete Modal ----------------------------------- */}
    
-    {showModal && (
+  
 
-            <div class="modal fade" id="myModals" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal fade" id="myModalDelete" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
                 <div class="modal-dialog" role="document">
                     <div class="modal-content">
                         <div class="modal-header">
@@ -321,7 +319,7 @@ function FacultyDetails() {
                     </div>
                 </div>
             </div>   
-    )} 
+  
 
 
 

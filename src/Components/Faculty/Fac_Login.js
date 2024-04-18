@@ -1,10 +1,11 @@
+
 import React,{useState} from 'react'
 import { toast } from 'react-toastify';
 import { Link , useNavigate} from 'react-router-dom';
 import Brand from '../Students/images/brand2.png';
 import Footer from '../HomePage/Footer';
 
-function Login({ setAuthenticatedUser }) {
+function Fac_Login({ setAuthenticatedUser }) {
     const[formdata, setFormData] = useState({})
     const navigate=useNavigate()
     const handleInput = (e)=>{
@@ -14,32 +15,34 @@ function Login({ setAuthenticatedUser }) {
             [name]:value,
         })
     }
+
     const checkValidation = ()=>{
-          const requiredField = ['username', 'password']
-          for(const field of requiredField){
-              console.log(field)
-              console.log(formdata[field])
-              if(!formdata[field]){
-                  toast.warning(`${field.replace('_','')} is required`, {
-                      position: toast.POSITION.TOP_CENTER,
-                      theme: 'colored',
-                  });
-                  return false;
-              }
+      const requiredField = ['username', 'password']
+      for(const field of requiredField){
+          console.log(field)
+          console.log(formdata[field])
+          if(!formdata[field]){
+              toast.warning(`${field.replace('_','')} is required`, {
+                  position: toast.POSITION.TOP_CENTER,
+                  theme: 'colored',
+              });
+              return false;
           }
-          return true;
       }
+      return true;
+  }
 
     const handleSubmit = async (e) =>{
         e.preventDefault();
-        if(!checkValidation()){
-              return;
-          }
   console.log(formdata);
+
+  if(!checkValidation()){
+    return;
+}
 
   try {
     // Make an API request to validate user credentials
-    const response = await fetch('http://127.0.0.1:8000/student_login/', {
+    const response = await fetch('http://127.0.0.1:8000/faculty_login/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -57,7 +60,7 @@ function Login({ setAuthenticatedUser }) {
         theme: 'colored',
       });
       setAuthenticatedUser(formdata.username);
-      navigate('/student_dashboard', { state: { username: formdata.username } });
+      navigate('/faculty_dashboard', { state: { username: formdata.username } });
       console.log('Login successful');
     } else {
       toast.error("Invalid Credentials!", {
@@ -108,4 +111,5 @@ function Login({ setAuthenticatedUser }) {
   )
 }
 
-export default Login
+export default Fac_Login
+

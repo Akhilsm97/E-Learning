@@ -158,7 +158,7 @@ function Uploaded_Questions() {
         <div className='container p-3' style={{ border:'solid 1px lightgrey'}}>
             <div className='row'>
                 <div className='col-md-2' >
-                    <p className='font-weight-bold font-italic'>ASSESSMENTS OUESTIONS</p>
+                    <p className='font-weight-bold font-italic'>ASSESSMENTS QUESTIONS</p>
                 </div>
                 <div className='col-md-5'  >
                     <div className='inner' style={{  display: 'flex', alignItems: 'center',width:'80%'}}>
@@ -201,8 +201,8 @@ function Uploaded_Questions() {
                         <div className='row'>
                             {fetchedDatas.map((data, index) => (
                                 
-                                    <div className='col-md-6'>
-                                    <div class="accordion-item p-3" key={index}>
+                                    <div className='col-md-6 p-4' style={{width:'50%'}}>
+                                    <div class="accordion-item p-3  card" key={index} style={{width:'95%',marginLeft:30}}>
                                         <h2 class="accordion-header">
                                             
                                             
@@ -210,7 +210,7 @@ function Uploaded_Questions() {
 
                                                    
 
-                                                            <p class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target={`#flush-collapse-${index}`} aria-expanded="false" aria-controls={`flush-collapse-${index}`} style={{fontSize:20}}>Question # {data.question_no}</p>
+                                                            <p class="accordion-button collapsed text-center" data-bs-toggle="collapse" data-bs-target={`#flush-collapse-${index}`} aria-expanded="false" aria-controls={`flush-collapse-${index}`} style={{fontSize:20}}>Question # {data.question_no}</p>
                                                        
                                             
                                         </h2>
@@ -223,16 +223,16 @@ function Uploaded_Questions() {
                                                         <div className='container'>
                                                             <div className='row'>
                                                                 <div className='col-md-6'>
-                                                                    <p style={{fontSize:14, textAlign:'left'}}>1. {data.option_1}</p>
+                                                                    <p style={{fontSize:14, textAlign:'left'}}>a. {data.option_1}</p>
                                                                 </div>
                                                                 <div className='col-md-6'>
-                                                                    <p style={{fontSize:14}}>2. {data.option_2}</p>
+                                                                    <p style={{fontSize:14}}>b. {data.option_2}</p>
                                                                 </div>
                                                                 <div className='col-md-6'>
-                                                                    <p style={{fontSize:14}}>3. {data.option_3}</p>
+                                                                    <p style={{fontSize:14}}>c. {data.option_3}</p>
                                                                 </div>
                                                                 <div className='col-md-6'>
-                                                                    <p style={{fontSize:14}}>4. {data.option_4}</p>
+                                                                    <p style={{fontSize:14}}>d. {data.option_4}</p>
                                                                 </div>
                                                                 <Link to="#" style={{marginLeft:180}} data-toggle="modal" data-target="#myModalQuestion" onClick={()=>updateQuestion(data.id)}><img src={Edit} style={{width:20}}></img></Link>
                                                                 <Link to="#" className='ml-3' data-toggle="modal" data-target="#myModalQuestionDelete" onClick={()=>updateQuestion(data.id)}><img src={Cross} style={{width:20}}></img></Link>

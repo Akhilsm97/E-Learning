@@ -13,9 +13,28 @@ function AdminLogin() {
         })
     }
 
+    const checkValidation = ()=>{
+        const requiredField = ['username', 'password']
+        for(const field of requiredField){
+            console.log(field)
+            console.log(formdata[field])
+            if(!formdata[field]){
+                toast.warning(`${field.replace('_','')} is required`, {
+                    position: toast.POSITION.TOP_CENTER,
+                    theme: 'colored',
+                });
+                return false;
+            }
+        }
+        return true;
+    }
+
     const handleSubmit = async (e) =>{
         e.preventDefault();
         console.log(formdata)
+        if(!checkValidation()){
+            return;
+        }
 
         try{
             const response = await fetch('http://127.0.0.1:8000/admin_login/', {
